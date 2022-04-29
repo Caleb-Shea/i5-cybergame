@@ -32,7 +32,7 @@ class Node(pyg.sprite.Sprite):
 
         self.image = pyg.Surface((40, 40)).convert_alpha()
         self.image.fill(colors['clear'])
-        pyg.draw.circle(self.image, self.data['color'], (20, 20), 20)
+        pyg.draw.circle(self.image, colors[self.data['color']], (20, 20), 20)
 
         self.rect = self.image.get_rect()
 
@@ -61,11 +61,20 @@ class Node(pyg.sprite.Sprite):
         else:
             # Otherwise, center on parent
             self.theta = self.parent.theta
-            num_sibs = len(self.parent.children)
-            self.theta += random.random() * (.5 * num_sibs * math.pi) - (.25 * num_sibs * math.pi)
 
-            self.rect.center = (self.parent.rect.centerx + 100 * math.cos(self.theta),
-                                self.parent.rect.centery + 100 * math.sin(self.theta))
+            if self.data['generation'] > 1:
+                num_sibs = len(self.parent.children) + 1
+                self.theta += (2 * math.pi) / num_sibs * int(self.data['name'][-1])
+            else:
+                num_sibs = len(self.parent.children)
+                self.theta += (2 * math.pi) / num_sibs * int(self.data['name'][-1])
+
+            if self.data['generation'] in [2, 3]:
+                self.theta += math.pi
+
+            self.dist = 120 - 10*self.data['generation']
+            self.rect.center = (self.parent.rect.centerx + self.dist * math.cos(self.theta),
+                                self.parent.rect.centery + self.dist * math.sin(self.theta))
 
     def get_children(self, nodes):
         """
@@ -98,8 +107,8 @@ class Node(pyg.sprite.Sprite):
         """
         if self.parent != None:
             self.theta += 0.0015
-            self.rect.center = (self.parent.rect.centerx + 100 * math.cos(self.theta),
-                                self.parent.rect.centery + 100 * math.sin(self.theta))
+            self.rect.center = (self.parent.rect.centerx + self.dist * math.cos(self.theta),
+                                self.parent.rect.centery + self.dist * math.sin(self.theta))
 
     def render(self):
         """
