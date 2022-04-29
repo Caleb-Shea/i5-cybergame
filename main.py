@@ -40,6 +40,7 @@ class Node(pyg.sprite.Sprite):
 
         self.is_hovered = False
         self.is_selected = False
+        self.is_bought = False
 
         self.name_img = fonts['zrnic24'].render(self.data['name'], True, colors['darkgray'])
         self.name_rect = self.name_img.get_rect()
@@ -73,14 +74,12 @@ class Node(pyg.sprite.Sprite):
             if self.data['generation'] > 1:
                 num_sibs = len(self.parent.children) + 1
                 self.theta += (2 * math.pi) / num_sibs * int(self.data['name'][-1])
+                self.theta += math.pi # Additional rotation to face the non-central nodes away from the center
             else:
                 num_sibs = len(self.parent.children)
                 self.theta += (2 * math.pi) / num_sibs * int(self.data['name'][-1])
 
-            if self.data['generation'] in [2, 3]:
-                self.theta += math.pi
-
-            self.dist = 200 - 10*(self.data['generation']**2)
+            self.dist = 200 - 10*(self.data['generation']**1.7)
             self.rect.center = (self.parent.rect.centerx + self.dist * math.cos(self.theta),
                                 self.parent.rect.centery + self.dist * math.sin(self.theta))
 
@@ -137,8 +136,12 @@ class Node(pyg.sprite.Sprite):
         Returns: None
         """
         self.draw_connections()
+        if self.is_bought:
+            # self.window.blit(self.glow_img, self.rect)
+            pyg.draw.circle(self.window, colors['yellow'], self.rect.center, self.radius * 1.1)
         self.window.blit(self.image, self.rect)
         self.window.blit(self.name_img, self.name_rect)
+
 
 def terminate():
     """
@@ -170,6 +173,30 @@ def play_sound(sound):
     se_channel = pyg.mixer.find_channel()
     se_channel.play(sound)
 
+def render_bg(window, bg_star_coords):
+    """
+    Description: Render a faux starscape.
+    Parameters:
+        window [pyg.Surface] -> The surface to draw on
+        bg_star_coords [list] -> A list containing coordinates and size data
+                                 for each star
+    Returns: None
+    """
+    for star in bg_star_coords:
+        x = star[0]
+        y = star[1]
+        size = star[2]
+        corner = star[3]
+
+        if corner == 1:
+            pyg.draw.circle(window, colors['starwhite'], (x, y), size, draw_top_left=True)
+        elif corner == 2:
+            pyg.draw.circle(window, colors['starwhite'], (x, y), size, draw_top_right=True)
+        elif corner == 3:
+            pyg.draw.circle(window, colors['starwhite'], (x, y), size, draw_bottom_left=True)
+        else:
+            pyg.draw.circle(window, colors['starwhite'], (x, y), size, draw_bottom_right=True)
+
 def main():
     nodes = pyg.sprite.Group()
     for data in node_data:
@@ -178,6 +205,15 @@ def main():
 
     for node in nodes:
         node.phase_two_init(nodes)
+
+    bg_star_coords = []
+    for i in range(10000):
+        x = random.randint(-WIDTH, 2 * WIDTH)
+        y = random.randint(-HEIGHT, 2 * HEIGHT)
+        size = random.random() + 1.5
+        corner = random.randint(1, 4)
+
+        bg_star_coords.append([x, y, size, corner])
 
 
     clock = pyg.time.Clock()
@@ -200,8 +236,8 @@ def main():
 
             elif event.type == pyg.MOUSEBUTTONDOWN:
                 for node in nodes:
-                    if node.is_hovered:
-                        node.is_selected = not node.is_selected
+                    if math.dist(event.pos, node.rect.center) <= node.radius:
+                        node.is_bought = True
 
 
         event_keys = pyg.key.get_pressed()
@@ -210,23 +246,35 @@ def main():
          # Move the nodes if a key is pressed
         if event_keys[pyg.K_LEFT] or event_keys[pyg.K_a]:
             for node in nodes:
-                node.rect.x += 10
+                node.rect.x += 15
+            for star in bg_star_coords:
+                star[0] += 1.5
         if event_keys[pyg.K_RIGHT] or event_keys[pyg.K_d]:
             for node in nodes:
-                node.rect.x -= 10
+                node.rect.x -= 15
+            for star in bg_star_coords:
+                star[0] -= 1.5
         if event_keys[pyg.K_UP] or event_keys[pyg.K_w]:
             for node in nodes:
-                node.rect.y += 10
+                node.rect.y += 15
+            for star in bg_star_coords:
+                star[1] += 1.5
         if event_keys[pyg.K_DOWN] or event_keys[pyg.K_s]:
             for node in nodes:
-                node.rect.y -= 10
+                node.rect.y -= 15
+            for star in bg_star_coords:
+                star[1] -= 1.5
         if mouse_keys[0]:
             for node in nodes:
                 node.rect.x += m_rel[0]
                 node.rect.y += m_rel[1]
+            for star in bg_star_coords:
+                star[0] += m_rel[0] * .1
+                star[1] += m_rel[1] * .1
 
 
         window.fill(colors['black'])
+        render_bg(window, bg_star_coords)
 
         for node in nodes:
             node.update()
