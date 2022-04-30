@@ -1,3 +1,11 @@
+"""
+The sole purpose of this file is to load assets required.
+
+Assets are grouped according to how they will be used, and stored as dicts
+for easy access.
+"""
+
+
 import pygame as pyg
 import os
 

@@ -1,3 +1,12 @@
+"""
+This is where all the colors available will be stored. The format is as follows:
+
+'nameofcolor': (  R,   G,   B,   A)
+
+If a component is less than three digits, use spaces for consistency
+"""
+
+
 colors = {'clear': (  0,   0,   0,   0),
           'white': (255, 255, 255),
           'starwhite': (230, 230, 230),

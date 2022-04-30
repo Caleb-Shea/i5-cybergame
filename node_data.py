@@ -1,3 +1,18 @@
+"""
+The data for every node. The format is as follows:
+
+'name' -> The name of the node. This will be shown on the node itself
+'desc'-> The description of the node. This will be shown in the node's tooltip
+'color' -> The color of the node's body.
+'cost' -> The monetary cost to purchase the node.
+'parent' -> The name of the parent of this node. *name, not a reference to
+'children' -> The names of the children of this node. *names, not references to
+'generation' -> The generation of this node.
+
+As more nodes get added, more than likely reorganizing this data will be needed.
+"""
+
+
 node_data = [{'name': 'CENTER',
             'desc': 'center',
             'color': 'white',
