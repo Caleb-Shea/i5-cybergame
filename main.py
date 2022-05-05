@@ -263,7 +263,6 @@ def main():
                             if node.parent.is_bought:
                                 node.is_bought = True
 
-
         # Handle held down keys and mouse movement
         event_keys = pyg.key.get_pressed()
         mouse_keys = pyg.mouse.get_pressed()
