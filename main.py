@@ -10,7 +10,7 @@ import math
 import os
 
 from colors import colors
-from node_data import node_data
+from node_data import *
 
 
 class Node(pyg.sprite.Sprite):
@@ -36,19 +36,40 @@ class Node(pyg.sprite.Sprite):
         # Will probably be deprecated once images are made
         self.radius = 50 + (3 - (self.data['generation'] * 5))
 
-        self.image = pyg.Surface((self.radius * 2, self.radius * 2)).convert_alpha()
-        self.image.fill(colors['clear'])
-        pyg.draw.circle(self.image, colors[self.data['color']], (self.radius, self.radius), self.radius)
+        self.image_src = pyg.Surface((self.radius * 3, self.radius * 3)).convert_alpha()
+        self.image_src.fill(colors['clear'])
 
-        self.rect = self.image.get_rect()
+        self.rect = self.image_src.get_rect()
+        pyg.draw.circle(self.image_src, colors[self.data['color']], (self.rect.centerx, self.rect.centery), self.radius)
+
+        # Make a separate image for rendering so we don't lose fidelity
+        self.draw_image = self.image_src.copy()
+        self.draw_rect = self.image_src.get_rect()
+
+        # Create the menu that pops up once clicked
+        self.menu = pyg.Surface((WIDTH, HEIGHT)).convert_alpha()
+        self.menu.fill(colors['clear'])
+        name_img = fonts['zrnic36'].render(self.data['name'], True, colors['white'])
+        name_rect = name_img.get_rect()
+        name_rect.center = (WIDTH//3, 30)
+        self.menu.blit(name_img, name_rect)
+        desc_img = fonts['zrnic24'].render(self.data['desc'], True, colors['white'])
+        desc_rect = desc_img.get_rect()
+        desc_rect.center = (WIDTH//3, 70)
+        self.menu.blit(desc_img, desc_rect)
 
         # All booleans required for the node to function
-        self.is_hovered = False
         self.is_selected = False
-        self.is_bought = False
+        self.is_hovered = False
 
         # The surface and rect for the name of this node
-        self.name_img = fonts['zrnic24'].render(self.data['name'], True, colors['darkgray'])
+        if len(self.data['name']) < 7:
+            self.name_img = fonts['zrnic24'].render(self.data['name'], True, colors['darkgray'])
+        elif len(self.data['name']) < 10:
+            self.name_img = fonts['zrnic16'].render(self.data['name'], True, colors['darkgray'])
+        else:
+            self.name_img = fonts['zrnic14'].render(self.data['name'], True, colors['darkgray'])
+
         self.name_rect = self.name_img.get_rect()
 
     def phase_two_init(self, nodes):
@@ -71,10 +92,9 @@ class Node(pyg.sprite.Sprite):
         # Initalize position and rotation
         if self.parent == None:
             # If center node, center on the screen
-            if self.data['name'] == 'CENTER':
-                self.rect.center = (WIDTH//2, HEIGHT//2)
-                # The center has a theta so it's children don't overlap
-                self.theta = random.random() * (4 * math.pi)
+            self.rect.center = (WIDTH//2, HEIGHT//2)
+            # The center has a theta so it's children don't overlap
+            self.theta = random.random() * (4 * math.pi)
         else:
             # Otherwise, center on parent
             self.theta = self.parent.theta
@@ -82,15 +102,15 @@ class Node(pyg.sprite.Sprite):
             if self.data['generation'] > 1:
                 # Use the number of siblings to space said siblings apart
                 num_sibs = len(self.parent.children) + 1
-                self.theta += (2 * math.pi) / num_sibs * int(self.data['name'][-1])
+                self.theta += (2 * math.pi) / num_sibs * int(self.data['index'])
                 self.theta += math.pi # Additional rotation to face the non-central nodes away from the center
             else:
                 # This only runs for 1st gen nodes
                 num_sibs = len(self.parent.children)
-                self.theta += (2 * math.pi) / num_sibs * int(self.data['name'][-1])
+                self.theta += (2 * math.pi) / num_sibs * int(self.data['index'])
 
             # Set distances between parent and this node based on generation
-            self.dist = 200 - 10*(self.data['generation']**1.7)
+            self.dist = self.data['dist']
             self.rect.center = (self.parent.rect.centerx + self.dist * math.cos(self.theta),
                                 self.parent.rect.centery + self.dist * math.sin(self.theta))
 
@@ -131,17 +151,28 @@ class Node(pyg.sprite.Sprite):
             self.rect.center = (self.parent.rect.centerx + self.dist * math.cos(self.theta),
                                 self.parent.rect.centery + self.dist * math.sin(self.theta))
 
-        # Unused for now, waiting until images are created
+        # If the mouse is hovering over this node, make it bigger
         m_pos = pyg.mouse.get_pos()
-        if math.dist(m_pos, self.rect.center) <= self.radius:
+        if math.dist(m_pos, self.rect.center) <= self.radius or self.is_selected:
             self.is_hovered = True
-            # pyg.transform.smoothscale(self.image, (2 * (self.radius + 3), 2 * (self.radius + 3)))
+            self.draw_rect = self.rect.inflate(math.ceil(self.radius * .2), math.ceil(self.radius * .2))
+            self.draw_image = pyg.transform.smoothscale(self.image_src, self.draw_rect.size)
+
         else:
             self.is_hovered = False
-            # pyg.transform.smoothscale(self.image, (2 * self.radius, 2 * self.radius))
+            self.draw_rect = self.rect.copy()
+            self.draw_image = pyg.transform.smoothscale(self.image_src, self.draw_rect.size)
 
         # Center the name
         self.name_rect.center = self.rect.center
+
+    def render_menu(self):
+        """
+        Description: Render this node's menu on the screen.
+        Parameters: None
+        Returns: None
+        """
+        self.window.blit(self.menu, (0, 0))
 
     def render(self):
         """
@@ -150,10 +181,7 @@ class Node(pyg.sprite.Sprite):
         Returns: None
         """
         self.draw_connections()
-        if self.is_bought:
-            # self.window.blit(self.glow_img, self.rect)
-            pyg.draw.circle(self.window, colors['yellow'], self.rect.center, self.radius * 1.1)
-        self.window.blit(self.image, self.rect)
+        self.window.blit(self.draw_image, self.draw_rect)
         self.window.blit(self.name_img, self.name_rect)
 
 
@@ -187,6 +215,59 @@ def play_sound(sound):
     se_channel = pyg.mixer.find_channel()
     se_channel.play(sound)
 
+def init_nodes():
+    # Create all nodes from node_data.py
+    earth_nodes = pyg.sprite.Group()
+    for data in main_data:
+        node = Node(window, data)
+        earth_nodes.add(node)
+
+    gssap_nodes = pyg.sprite.Group()
+    for data in gssap_data:
+        node = Node(window, data)
+        gssap_nodes.add(node)
+
+    # once all nodes have been made, init phase two
+    for node in earth_nodes:
+        node.phase_two_init(earth_nodes)
+    for node in gssap_nodes:
+        node.phase_two_init(gssap_nodes)
+
+
+    node_dict = {'EARTH': earth_nodes,
+                 'GSSAP': gssap_nodes,
+                 'OPS': [],
+                 'PERSONNEL': [],
+                 'ACQUISITIONS': []}
+
+    return node_dict
+
+def zoom_to(node, cur_center):
+    """
+    Description: Replace the menu nodes with the node map of the passed node.
+    Parameters:
+        node [Node()] -> The node to zoom in on
+        cur_center [str] -> The name of the node currently in the center
+    Returns: str -> The name of the node in the center
+    """
+
+    if node.data['name'] != cur_center:
+        if node.data['is_zoomable']:
+            return node.data['name']
+
+    return cur_center
+
+def render_back_arrow(window):
+    """
+    Description: Render a back arrow that will take us back to the main menu.
+    Parameters:
+        window [pyg.Surface] -> The surface to draw on
+    Returns: None
+    """
+    arrow = fonts['zrnic48'].render("<--- EARTH", True, colors['white'])
+
+    window.blit(arrow, (20, 20))
+
 def render_bg(window, bg_star_coords):
     """
     Description: Render a faux starscape.
@@ -213,15 +294,10 @@ def render_bg(window, bg_star_coords):
             pyg.draw.circle(window, colors['starwhite'], (x, y), size, draw_bottom_right=True)
 
 def main():
-    # Create all nodes from node_data
+    all_nodes = init_nodes()
     nodes = pyg.sprite.Group()
-    for data in node_data:
-        node = Node(window, data)
-        nodes.add(node)
 
-    # once all nodes have been made, init phase two
-    for node in nodes:
-        node.phase_two_init(nodes)
+    cur_center = 'EARTH'
 
     # Create the background star effect
     bg_star_coords = []
@@ -253,15 +329,24 @@ def main():
             elif event.type == pyg.KEYUP:
                 ...
 
-            elif event.type == pyg.MOUSEBUTTONDOWN:
-                for node in nodes:
-                    # If a node is clicked on, buy it (will change)
-                    if math.dist(event.pos, node.rect.center) <= node.radius:
-                        if node.parent == None:
-                            node.is_bought = True
-                        else:
-                            if node.parent.is_bought:
-                                node.is_bought = True
+            elif event.type == pyg.MOUSEBUTTONUP: # This will need to be fixed
+                if event.pos[0] < 100 and event.pos[1] < 50 and cur_center != 'EARTH':
+                    cur_center = 'EARTH'
+
+                for node in all_nodes[cur_center]:
+                    if node.is_selected:
+                        if math.dist(event.pos, node.rect.center) <= node.radius:
+                            cur_center = zoom_to(node, cur_center)
+                    # If a node is clicked on, select it
+                    if node.is_hovered:
+                        if math.dist(event.pos, node.rect.center) <= node.radius:
+                            node.is_selected = True
+
+                    # Deselect nodes that haven't been clicked on
+                    # But not if the mouse is dragged
+                    if node.is_selected and m_rel[0] < .5 and m_rel[1] < .5:
+                        if math.dist(event.pos, node.rect.center) > node.radius:
+                            node.is_selected = False
 
         # Handle held down keys and mouse movement
         event_keys = pyg.key.get_pressed()
@@ -269,28 +354,28 @@ def main():
         m_rel = pyg.mouse.get_rel()
          # Move all the nodes/stars if a key is pressed
         if event_keys[pyg.K_LEFT] or event_keys[pyg.K_a]:
-            for node in nodes:
+            for node in all_nodes[cur_center]:
                 node.rect.x += 15
             for star in bg_star_coords:
                 star[0] += 1.5 # Move the nodes less for a parallax effect
         if event_keys[pyg.K_RIGHT] or event_keys[pyg.K_d]:
-            for node in nodes:
+            for node in all_nodes[cur_center]:
                 node.rect.x -= 15
             for star in bg_star_coords:
                 star[0] -= 1.5
         if event_keys[pyg.K_UP] or event_keys[pyg.K_w]:
-            for node in nodes:
+            for node in all_nodes[cur_center]:
                 node.rect.y += 15
             for star in bg_star_coords:
                 star[1] += 1.5
         if event_keys[pyg.K_DOWN] or event_keys[pyg.K_s]:
-            for node in nodes:
+            for node in all_nodes[cur_center]:
                 node.rect.y -= 15
             for star in bg_star_coords:
                 star[1] -= 1.5
         # Move all the nodes/stars if the mouse is dragged
         if mouse_keys[0]:
-            for node in nodes:
+            for node in all_nodes[cur_center]:
                 node.rect.x += m_rel[0]
                 node.rect.y += m_rel[1]
             for star in bg_star_coords:
@@ -302,9 +387,18 @@ def main():
         render_bg(window, bg_star_coords)
 
         # Update and render all the nodes
-        for node in nodes:
+        for node in all_nodes[cur_center]:
             node.update()
             node.render()
+
+        # If a node is selected, render it's menu
+        for node in all_nodes[cur_center]:
+            if node.is_selected:
+                node.render_menu()
+                break
+
+        if cur_center != 'EARTH':
+            render_back_arrow(window)
 
         # Update the display, and don't exceed FPS
         pyg.display.flip()

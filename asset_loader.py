@@ -9,11 +9,23 @@ for easy access.
 import pygame as pyg
 import os
 
-from main import get_path
+def get_path(path):
+    """
+    Description: Get the full path from a partial file path.
+    Parameters:
+        path [path-like-object] -> The partial path to get the full path from
+    Returns:
+        A path-like-object that contains a full path
+    """
+    dirname = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(dirname, path)
 
-fonts = {'zrnic16': pyg.font.Font(get_path(os.path.join('assets', 'fonts', 'zrnic.ttf')), 16),
+
+fonts = {'zrnic14': pyg.font.Font(get_path(os.path.join('assets', 'fonts', 'zrnic.ttf')), 14),
+         'zrnic16': pyg.font.Font(get_path(os.path.join('assets', 'fonts', 'zrnic.ttf')), 16),
          'zrnic24': pyg.font.Font(get_path(os.path.join('assets', 'fonts', 'zrnic.ttf')), 24),
          'zrnic32': pyg.font.Font(get_path(os.path.join('assets', 'fonts', 'zrnic.ttf')), 32),
+         'zrnic36': pyg.font.Font(get_path(os.path.join('assets', 'fonts', 'zrnic.ttf')), 36),
          'zrnic48': pyg.font.Font(get_path(os.path.join('assets', 'fonts', 'zrnic.ttf')), 48)}
 
 # Not actual files, this is C/P from another file of mine for future use
