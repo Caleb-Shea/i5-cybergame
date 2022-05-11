@@ -82,12 +82,14 @@ class Node(pyg.sprite.Sprite):
         Returns: None
         """
         self.nodes = nodes
-        self.get_children(self.nodes)
 
         # Find the parent of this node
         for node in nodes:
             if self.parent == node.data['name']:
                 self.parent = node
+
+        self.get_children()
+        self.get_siblings()
 
         # Initalize position and rotation
         if self.parent == None:
@@ -101,12 +103,12 @@ class Node(pyg.sprite.Sprite):
 
             if self.data['generation'] > 1:
                 # Use the number of siblings to space said siblings apart
-                num_sibs = len(self.parent.children) + 1
+                num_sibs = len(self.siblings) + 1
                 self.theta += (2 * math.pi) / num_sibs * int(self.data['index'])
                 self.theta += math.pi # Additional rotation to face the non-central nodes away from the center
             else:
                 # This only runs for 1st gen nodes
-                num_sibs = len(self.parent.children)
+                num_sibs = len(self.siblings)
                 self.theta += (2 * math.pi) / num_sibs * int(self.data['index'])
 
             # Set distances between parent and this node based on generation
@@ -114,40 +116,58 @@ class Node(pyg.sprite.Sprite):
             self.rect.center = (self.parent.rect.centerx + self.dist * math.cos(self.theta),
                                 self.parent.rect.centery + self.dist * math.sin(self.theta))
 
-    def get_children(self, nodes):
+    def get_children(self):
         """
         Description: Create a list of this node's children.
-        Parameters:
-            nodes [pyg.sprite.Group] -> The complete lists of nodes.
+        Parameters: None
         Returns: None
         """
         self.children = []
         for child in self.data['children']:
-            for node in nodes:
+            for node in self.nodes:
                 if node.data['name'] == child:
                     self.children.append(node)
 
+    def get_siblings(self):
+        """
+        Description: Create a list of this node's siblings.
+        Parameters: None
+        Returns: None
+        """
+        self.siblings = []
+        if self.parent != None:
+            for potential in self.parent.children:
+                if potential.data['generation'] == self.data['generation']:
+                    self.siblings.append(potential)
+
     def draw_connections(self):
         """
-        Description: Draw lines between this node and it's children.
+        Description: Either draw lines between this node and it's children or
+                     draw orbits.
         Parameters: None
         Returns: None
         """
         for child in self.children:
-            pyg.draw.aaline(window, colors['gray'],
-                          self.rect.center, child.rect.center) # Use arcs later
+            if child.dist < 300:
+                # Draw straight lines
+                pyg.draw.aaline(window, colors['gray'],
+                              self.rect.center, child.rect.center) # Use arcs later
+            else:
+                # Draw an orbit
+                pyg.draw.circle(window, colors['gray'], self.rect.center,
+                                child.data['dist'], 1) # Use ellipses later
 
     def update(self):
         """
         Description: Spin this node around the central node.
-                     Set is_hovered and is_selected booleans.
+                     Set is_hovered booleans.
                      Position text.
         Parameters: None
         Returns: None
         """
         # Slowly spin this node around the center
         if self.parent != None:
-            self.theta += 0.0015
+            self.theta += 0.001 + self.data['generation'] * .0001
             self.rect.center = (self.parent.rect.centerx + self.dist * math.cos(self.theta),
                                 self.parent.rect.centery + self.dist * math.sin(self.theta))
 
@@ -200,7 +220,7 @@ def get_path(path):
     Parameters:
         path [path-like-object] -> The partial path to get the full path from
     Returns:
-        A path-like-object that contains a full path
+        [path-like-object] -> The full path
     """
     dirname = os.path.dirname(os.path.abspath(__file__))
     return os.path.join(dirname, path)
@@ -216,6 +236,13 @@ def play_sound(sound):
     se_channel.play(sound)
 
 def init_nodes():
+    """
+    Description: Create a dictionary that contains all the nodes the program
+                 needs.
+    Parameters: None
+    Returns:
+        node_dict [dict] -> The dict with all the nodes
+    """
     # Create all nodes from node_data.py
     earth_nodes = pyg.sprite.Group()
     for data in main_data:
@@ -227,15 +254,58 @@ def init_nodes():
         node = Node(window, data)
         gssap_nodes.add(node)
 
-    # once all nodes have been made, init phase two
+    iss_nodes = pyg.sprite.Group()
+    for data in iss_data:
+        node = Node(window, data)
+        iss_nodes.add(node)
+
+    milstar_nodes = pyg.sprite.Group()
+    for data in milstar_data:
+        node = Node(window, data)
+        milstar_nodes.add(node)
+
+    aehf_nodes = pyg.sprite.Group()
+    for data in aehf_data:
+        node = Node(window, data)
+        aehf_nodes.add(node)
+
+    gps_nodes = pyg.sprite.Group()
+    for data in gps_data:
+        node = Node(window, data)
+        gps_nodes.add(node)
+
+    sbirs_nodes = pyg.sprite.Group()
+    for data in sbirs_data:
+        node = Node(window, data)
+        sbirs_nodes.add(node)
+
+    # Once all nodes have been made, init phase two
     for node in earth_nodes:
         node.phase_two_init(earth_nodes)
     for node in gssap_nodes:
         node.phase_two_init(gssap_nodes)
+    for node in iss_nodes:
+        node.phase_two_init(iss_nodes)
+    for node in milstar_nodes:
+        node.phase_two_init(milstar_nodes)
+    for node in aehf_nodes:
+        node.phase_two_init(aehf_nodes)
+    for node in gps_nodes:
+        node.phase_two_init(gps_nodes)
+    for node in sbirs_nodes:
+        node.phase_two_init(sbirs_nodes)
 
 
     node_dict = {'EARTH': earth_nodes,
                  'GSSAP': gssap_nodes,
+                 'ISS': iss_nodes,
+                 'MILSTAR': milstar_nodes,
+                 'AEHF': aehf_nodes,
+                 'GPS': gps_nodes,
+                 'SBIRS': sbirs_nodes,
+
+                 # These are included because although they use a different menu
+                 # system, we still need to clear the screen
                  'OPS': [],
                  'PERSONNEL': [],
                  'ACQUISITIONS': []}
@@ -294,9 +364,8 @@ def render_bg(window, bg_star_coords):
             pyg.draw.circle(window, colors['starwhite'], (x, y), size, draw_bottom_right=True)
 
 def main():
+    # all_nodes is a dictionary that will hold every node
     all_nodes = init_nodes()
-    nodes = pyg.sprite.Group()
-
     cur_center = 'EARTH'
 
     # Create the background star effect
@@ -312,7 +381,7 @@ def main():
 
     # Timekeeping
     clock = pyg.time.Clock()
-    FPS = 30
+    FPS = 60
 
     while True:
         # Handle all events.
@@ -330,23 +399,21 @@ def main():
                 ...
 
             elif event.type == pyg.MOUSEBUTTONUP: # This will need to be fixed
-                if event.pos[0] < 100 and event.pos[1] < 50 and cur_center != 'EARTH':
+                if event.pos[0] < 200 and event.pos[1] < 100 and cur_center != 'EARTH': # Will need to be changed
                     cur_center = 'EARTH'
 
                 for node in all_nodes[cur_center]:
-                    if node.is_selected:
+                    if node.is_selected and m_rel == (0, 0):
                         if math.dist(event.pos, node.rect.center) <= node.radius:
                             cur_center = zoom_to(node, cur_center)
+                        else:
+                            node.is_selected = False
+
                     # If a node is clicked on, select it
                     if node.is_hovered:
                         if math.dist(event.pos, node.rect.center) <= node.radius:
                             node.is_selected = True
 
-                    # Deselect nodes that haven't been clicked on
-                    # But not if the mouse is dragged
-                    if node.is_selected and m_rel[0] < .5 and m_rel[1] < .5:
-                        if math.dist(event.pos, node.rect.center) > node.radius:
-                            node.is_selected = False
 
         # Handle held down keys and mouse movement
         event_keys = pyg.key.get_pressed()
