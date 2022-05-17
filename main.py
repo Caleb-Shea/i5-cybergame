@@ -155,7 +155,7 @@ class Node(pyg.sprite.Sprite):
             else:
                 # Draw an orbit
                 pyg.draw.circle(window, colors['gray'], self.rect.center,
-                                child.data['dist'], 1) # Use ellipses later
+                                child.data['dist'], 1) # Use ellipses later?
 
     def update(self):
         """
@@ -167,7 +167,12 @@ class Node(pyg.sprite.Sprite):
         """
         # Slowly spin this node around the center
         if self.parent != None:
-            self.theta += 0.001 + self.data['generation'] * .0001
+            self.theta += 0.001
+
+            # If this node is really far away (i.e. it has an orbit), go faster
+            if self.data['dist'] >= 300:
+                self.theta += 0.0004
+
             self.rect.center = (self.parent.rect.centerx + self.dist * math.cos(self.theta),
                                 self.parent.rect.centery + self.dist * math.sin(self.theta))
 
@@ -204,6 +209,78 @@ class Node(pyg.sprite.Sprite):
         self.window.blit(self.draw_image, self.draw_rect)
         self.window.blit(self.name_img, self.name_rect)
 
+
+class FullMenu():
+    def __init__(self, window):
+        """
+        Description: A class to represent a single node. The node has a parent,
+                     children, and attributes used for purchasing, inspecting, and
+                     learning about this node.
+        Parameters:
+            window [pyg.Surface] -> A reference to the screen.
+        Returns: None
+        """
+        self.window = window
+
+        self.rect = self.window.get_rect().inflate(-20, -20)
+        self.image = pyg.Surface(self.rect.size)
+        self.image.fill(colors['darkgray'])
+
+
+        self.tab_names = ['ACQUISITIONS', 'OPS', 'PERSONNEL', 'INTEL', 'CYBER']
+        self.tabs = []
+        for i, tab in enumerate(self.tab_names):
+            size = self.rect.width//len(self.tab_names)
+            rect = pyg.rect.Rect(i * size, 0, size, 50)
+            self.tabs.append(rect)
+
+        self.cur_tab = self.tab_names[1]
+
+    def update(self):
+        """
+        Description: Detect mouse clicks and update active tab.
+        Parameters: None
+        Returns: None
+        """
+        m_pos = pyg.mouse.get_pos()
+        m_pressed = pyg.mouse.get_pressed()
+        for rect, name in zip(self.tabs, self.tab_names):
+            # If a tab is clicked on, select it
+            # We move the rect because the mouse coords are absolute, but the
+            # rect coords are based on the topleft of the menu
+            if rect.move(10, 10).collidepoint(m_pos) and m_pressed[0]:
+                self.cur_tab = name
+
+    def render_tabs(self):
+        """
+        Description: Draw the tabs at the top of the screen.
+        Parameters: None
+        Returns: None
+        """
+        for rect, name in zip(self.tabs, self.tab_names):
+            if self.cur_tab == name:
+                pyg.draw.rect(self.image, colors['darkgray'], rect)
+            else:
+                pyg.draw.rect(self.image, colors['gray'], rect)
+
+            text = fonts['zrnic24'].render(name, True, colors['white'])
+            text_rect = text.get_rect(center=rect.center)
+            self.image.blit(text, text_rect)
+
+        # Draw lines separating each tab
+        size = self.rect.width//len(self.tab_names)
+        pyg.draw.line(self.image, colors['black'], (0, 50), (self.rect.right, 50))
+        for i in range(1, 5):
+            pyg.draw.line(self.image, colors['darkgray'], (i*size, 0), (i*size, 50))
+
+    def render(self):
+        """
+        Description: Render this menu on the screen.
+        Parameters: None
+        Returns: None
+        """
+        self.window.blit(self.image, self.rect)
+        self.render_tabs()
 
 def terminate():
     """
@@ -308,6 +385,8 @@ def init_nodes():
                  # system, we still need to clear the screen
                  'OPS': [],
                  'PERSONNEL': [],
+                 'INTEL': [],
+                 'CYBER': [],
                  'ACQUISITIONS': []}
 
     return node_dict
@@ -364,9 +443,12 @@ def render_bg(window, bg_star_coords):
             pyg.draw.circle(window, colors['starwhite'], (x, y), size, draw_bottom_right=True)
 
 def main():
-    # all_nodes is a dictionary that will hold every node
+    # all_nodes is a dictionary that holds every node
     all_nodes = init_nodes()
     cur_center = 'EARTH'
+
+    # full_menu is an object that is used for Earth's menu
+    full_menu = FullMenu(window)
 
     # Create the background star effect
     bg_star_coords = []
@@ -384,7 +466,7 @@ def main():
     FPS = 60
 
     while True:
-        # Handle all events.
+        # Handle all events
         for event in pyg.event.get():
             if event.type == pyg.QUIT:
                 terminate()
@@ -464,6 +546,13 @@ def main():
                 node.render_menu()
                 break
 
+        # If the current center node doesn't use nodes (e.x. OPS or CYBER), use
+        # a full screen menu
+        if len(all_nodes[cur_center]) == 0:
+            full_menu.update()
+            full_menu.render()
+
+        # Give the user a way back to the main screen
         if cur_center != 'EARTH':
             render_back_arrow(window)
 

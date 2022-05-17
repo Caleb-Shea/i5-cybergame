@@ -6,9 +6,7 @@ Compile with https://pyinstaller.org/en/stable/
 
 Earth + and all satellites will use the node system
 
-Ops/Personnel will use a rectangular menu: left side is slide menu, right is description
-
-Acquisition will use a similar system to Ops/Personnel + three tabs on top (bases, satellites, tech). This will be how the player unlocks new upgrades/satellites/ranks/basically everything
+The full screen menu will be accessed from Earth, and will have several tabs that correlate to each SFSC (Ops, Acquisitions, Cyber, etc.)
 
 Menus:
 - New window? Or just stick with the one screen?
