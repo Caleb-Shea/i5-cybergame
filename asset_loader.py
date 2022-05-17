@@ -9,6 +9,8 @@ for easy access.
 import pygame as pyg
 import os
 
+pyg.font.init()
+
 def get_path(path):
     """
     Description: Get the full path from a partial file path.
@@ -24,6 +26,7 @@ def get_path(path):
 fonts = {'zrnic14': pyg.font.Font(get_path(os.path.join('assets', 'fonts', 'zrnic.ttf')), 14),
          'zrnic16': pyg.font.Font(get_path(os.path.join('assets', 'fonts', 'zrnic.ttf')), 16),
          'zrnic24': pyg.font.Font(get_path(os.path.join('assets', 'fonts', 'zrnic.ttf')), 24),
+         'zrnic30': pyg.font.Font(get_path(os.path.join('assets', 'fonts', 'zrnic.ttf')), 30),
          'zrnic32': pyg.font.Font(get_path(os.path.join('assets', 'fonts', 'zrnic.ttf')), 32),
          'zrnic36': pyg.font.Font(get_path(os.path.join('assets', 'fonts', 'zrnic.ttf')), 36),
          'zrnic48': pyg.font.Font(get_path(os.path.join('assets', 'fonts', 'zrnic.ttf')), 48)}
