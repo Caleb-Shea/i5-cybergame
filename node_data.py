@@ -10,6 +10,8 @@ The data for every node. The format is as follows:
 'generation' -> The generation of this node.
 'index' -> A number that helps with the spacing of the nodes
 'dist' -> The distance between this node and it's parent
+
+Maybe switch to CSV?
 """
 
 
