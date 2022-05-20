@@ -1,6 +1,9 @@
 # i5-cybergame
 A wargame simulation made by the i5 cyber element, with inspiration from the i5 intel element.
 
+Contributers:
+- Michaela Kovalsky (Team Lead)
+- Caleb Shea (Development Lead)
 
 Compile with https://pyinstaller.org/en/stable/
 
@@ -19,3 +22,7 @@ Zoom animation ideas:
 General:
 - There is a layered group built-in to pygame. That might be useful at some point
 - Use elliptical orbits
+- Split ui-click into a down and an up click
+
+Credits:
+- https://freesound.org/people/EminYILDIRIM/sounds/536108/

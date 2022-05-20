@@ -1,7 +1,7 @@
 """
-An upgrade tree simulation.
+A wargame simulation made by the i5 cyber element, with inspiration from the i5 intel element.
 
-By: Caleb Shea
+By: i5 Cyber element
 """
 
 import pygame as pyg
@@ -11,40 +11,10 @@ import os
 
 from node import Node
 from fullmenu import FullMenu
-from colors import colors
 from node_data import *
-from asset_loader import *
+from assets import *
+from helper_func import *
 
-
-def terminate():
-    """
-    Description: Cleanly exit the program.
-    Parameters: None
-    Returns: None
-    """
-    pyg.quit()
-    raise SystemExit()
-
-def get_path(path):
-    """
-    Description: Get the full path from a partial file path.
-    Parameters:
-        path [path-like-object] -> The partial path to get the full path from
-    Returns:
-        [path-like-object] -> The full path
-    """
-    dirname = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(dirname, path)
-
-def play_sound(sound):
-    """
-    Description: Play a sound out of any available channel.
-    Parameters:
-        sound [sound file] -> The sound to play
-    Returns: None
-    """
-    se_channel = pyg.mixer.find_channel()
-    se_channel.play(sound)
 
 def init_nodes():
     """
@@ -239,7 +209,7 @@ def main():
                     if node.is_selected and m_rel == (0, 0):
                         if math.dist(event.pos, node.rect.center) <= node.radius:
                             cur_center = zoom_to(node, cur_center)
-                            full_menu.cur_tab = cur_center
+                            full_menu.cur_tab = cur_center # Select the tab that we clicked on
                         else:
                             node.is_selected = False
 
@@ -319,8 +289,6 @@ def main():
 
 if __name__ == '__main__':
     # Initalize pygame and create a window
-    pyg.mixer.pre_init(44100, -16, 2, 512)
-    pyg.mixer.init()
     pyg.init()
     pyg.display.set_caption("Upgrade Tree")
     window = pyg.display.set_mode(flags=pyg.HWSURFACE | pyg.FULLSCREEN | pyg.DOUBLEBUF)

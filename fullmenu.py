@@ -1,7 +1,8 @@
 import pygame as pyg
 
-from colors import colors
-from asset_loader import *
+from assets import *
+from fullmenu_data import *
+from helper_func import *
 
 
 class FullMenu():
@@ -29,6 +30,8 @@ class FullMenu():
 
         self.cur_tab = self.tab_names[1]
 
+        self.channel = pyg.mixer.find_channel()
+
     def update(self):
         """
         Description: Detect mouse clicks and update active tab.
@@ -44,8 +47,16 @@ class FullMenu():
             if rect.move(10, 10).collidepoint(m_pos) and m_pressed[0]:
                 self.cur_tab = name
 
+                if not self.channel.get_busy():
+                    self.channel.play(sounds['ui_click'])
+
     def render_select(self):
-        ...
+        """
+        Description: Draw the selection menu on the left side of the screen.
+        Parameters: None
+        Returns: None
+        """
+        
 
     def render_tabs(self):
         """

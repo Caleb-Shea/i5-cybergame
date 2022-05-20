@@ -2,8 +2,8 @@ import pygame as pyg
 import random
 import math
 
-from colors import colors
-from asset_loader import *
+from assets import *
+from helper_func import *
 
 
 class Node(pyg.sprite.Sprite):

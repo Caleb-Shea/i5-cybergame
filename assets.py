@@ -10,6 +10,8 @@ import pygame as pyg
 import os
 
 pyg.font.init()
+pyg.mixer.pre_init(44100, -16, 2, 512)
+pyg.mixer.init()
 
 def get_path(path):
     """
@@ -31,8 +33,27 @@ fonts = {'zrnic14': pyg.font.Font(get_path(os.path.join('assets', 'fonts', 'zrni
          'zrnic36': pyg.font.Font(get_path(os.path.join('assets', 'fonts', 'zrnic.ttf')), 36),
          'zrnic48': pyg.font.Font(get_path(os.path.join('assets', 'fonts', 'zrnic.ttf')), 48)}
 
-# Not actual files, this is C/P from another file of mine for future use
-# node_images = {'bg_set_1': pyg.image.load(get_path(os.path.join('assets', 'imgs', 'background', 'bg_set_1.png'))),
-#                'bg_set_2': pyg.image.load(get_path(os.path.join('assets', 'imgs', 'background', 'bg_set_2.png'))),
-#                'bg_set_3': pyg.image.load(get_path(os.path.join('assets', 'imgs', 'background', 'bg_set_3.png'))),
-#                'bg_set_4': pyg.image.load(get_path(os.path.join('assets', 'imgs', 'background', 'bg_set_4.png')))}
+sounds = {'ui_click': pyg.mixer.Sound(get_path(os.path.join('assets', 'sounds', 'ui_click.wav')))}
+
+colors = {'clear': (  0,   0,   0,   0),
+          'fullmenu': (  5,   0,  30,  150),
+          'white': (255, 255, 255),
+          'starwhite': (230, 230, 230),
+          'gray': (120, 120, 120),
+          'darkgray': ( 50,  50,  50),
+          'space': (  0,   0,   7),
+          'black': (  0,   0,   0),
+          'red': (255,   0,   0),
+          'orange': (220, 100,   5),
+          'yellow': (255, 255,   0),
+          'green': (  0, 255,   0),
+          'lime': (120, 255,   0),
+          'mint': (  0, 255, 170),
+          'cyan': (  0, 255, 255),
+          'skyblue': (  0, 110, 255),
+          'blue': (  0,   0, 255),
+          'deepblue': (  5,   0, 20),
+          'indigo': ( 50,   0, 255),
+          'purple': (128,   0, 255),
+          'pink': (255,   0, 255),
+          'rose': (255,   0,  80)}
