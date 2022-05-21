@@ -23,6 +23,7 @@ General:
 - There is a layered group built-in to pygame. That might be useful at some point
 - Use elliptical orbits
 - Split ui-click into a down and an up click
+- pyg.Surface.fill() is hardware accelerated. Maybe switch?
 
 Credits:
 - https://freesound.org/people/EminYILDIRIM/sounds/536108/
