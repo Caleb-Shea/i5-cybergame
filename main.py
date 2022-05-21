@@ -122,7 +122,7 @@ def render_back_arrow(window, cur_center):
         arrow = fonts['zrnic48'].render("<--- EARTH", True, colors['white'])
 
         if cur_center in ['ACQUISITIONS', 'OPS', 'PERSONNEL', 'INTEL', 'CYBER']:
-            window.blit(arrow, (20, HEIGHT - 60))
+            window.blit(arrow, (20, HEIGHT - 65))
         else:
             window.blit(arrow, (20, 10))
 
