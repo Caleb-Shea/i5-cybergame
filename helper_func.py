@@ -4,7 +4,8 @@ several files.
 
 terminate()
 get_path(path)
-play_sound(sound)
+play_sound(sound, channel=None)
+word_wrap(text, font, color, rect)
 """
 
 
@@ -48,3 +49,45 @@ def play_sound(sound, channel=None):
         print(repr(e))
         print("Too many sounds being playeds")
         terminate()
+
+def word_wrap(text, font, color, rect):
+    """
+    Description: Word wrap a long string into the boundries of a given rect.
+    Parameters:
+        text [str] -> The text to wrap
+        font [pyg.font.Font] -> The font object to use
+        color [pyg.Color or tuple] -> The color of the text
+        rect [pyg.rect.Rect] -> The rect to use as boundries for wrapping
+    Returns:
+        [pyg.Surface] -> A surface containing the wrapped text
+
+    Credit:
+        Adapts some code from https://stackoverflow.com/a/49433498
+    """
+    surf = pyg.Surface(rect.size).convert_alpha()
+    surf.fill((0, 0, 0, 0))
+
+    words = text.split()
+
+    lines = []
+    while len(words) > 0:
+        # Get as many words as will fit within the rect
+        line_words = []
+        while len(words) > 0:
+            line_words.append(words.pop(0))
+            fw, fh = font.size(' '.join(line_words + words[:1]))
+            if fw > rect.width:
+                break
+
+        # Add a line consisting of those words
+        line = ' '.join(line_words)
+        lines.append(line)
+
+    # Render the lines onto surf
+    x, y = 0, 0
+    for line in lines:
+        line = font.render(line, True, color)
+        surf.blit(line, (x, y))
+        y += line.get_rect().height * 1.1
+
+    return surf
