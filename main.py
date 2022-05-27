@@ -1,16 +1,20 @@
+##!/usr/bin/env python # for some reason that I don't care to look into, this breaks on my computer
+# coding=utf-8
 """
-A wargame simulation made by the i5 cyber element, with inspiration from the i5 intel element.
+A wargaming simulation made by the i5 cyber element, with inspiration from the i5 intel element.
 
 By: i5 Cyber element
 """
 
+import datetime as dt
 import pygame as pyg
 import random
 import math
 import os
 
-from node import Node
 from fullmenu import FullMenu
+from node import Node
+from hud import HUD
 from node_data import *
 from assets import *
 from helper_func import *
@@ -27,37 +31,37 @@ def init_nodes():
     # Create all nodes from node_data.py
     earth_nodes = pyg.sprite.Group()
     for data in main_data:
-        node = Node(window, data)
+        node = Node(data)
         earth_nodes.add(node)
 
     gssap_nodes = pyg.sprite.Group()
     for data in gssap_data:
-        node = Node(window, data)
+        node = Node(data)
         gssap_nodes.add(node)
 
     iss_nodes = pyg.sprite.Group()
     for data in iss_data:
-        node = Node(window, data)
+        node = Node(data)
         iss_nodes.add(node)
 
     milstar_nodes = pyg.sprite.Group()
     for data in milstar_data:
-        node = Node(window, data)
+        node = Node(data)
         milstar_nodes.add(node)
 
     aehf_nodes = pyg.sprite.Group()
     for data in aehf_data:
-        node = Node(window, data)
+        node = Node(data)
         aehf_nodes.add(node)
 
     gps_nodes = pyg.sprite.Group()
     for data in gps_data:
-        node = Node(window, data)
+        node = Node(data)
         gps_nodes.add(node)
 
     sbirs_nodes = pyg.sprite.Group()
     for data in sbirs_data:
-        node = Node(window, data)
+        node = Node(data)
         sbirs_nodes.add(node)
 
     # Once all nodes have been made, init phase two
@@ -110,29 +114,13 @@ def zoom_to(node, cur_center):
 
     return cur_center
 
-def render_back_arrow(window, cur_center):
-    """
-    Description: Render a back arrow that will take us back to the main menu.
-    Parameters:
-        window [pyg.Surface] -> The surface to draw on
-        cur_center [str] -> The name of the node currently in the center
-    Returns: None
-    """
-    if cur_center != 'EARTH':
-        arrow = fonts['zrnic48'].render("<--- EARTH", True, colors['white'])
-
-        if cur_center in ['ACQUISITIONS', 'OPS', 'PERSONNEL', 'INTEL', 'CYBER']:
-            window.blit(arrow, (20, HEIGHT - 65))
-        else:
-            window.blit(arrow, (20, 10))
-
 def render_bg(window, bg_star_coords):
     """
     Description: Render a faux starscape.
     Parameters:
-        window [pyg.Surface] -> The surface to draw on
-        bg_star_coords [list] -> A list containing coordinates and size data
-                                 for each star
+    window [pyg.Surface] -> The surface to draw on
+    bg_star_coords [list] -> A list containing coordinates and size data
+    for each star
     Returns: None
     """
     for star in bg_star_coords:
@@ -152,12 +140,19 @@ def render_bg(window, bg_star_coords):
             pyg.draw.circle(window, colors['starwhite'], (x, y), size, draw_bottom_right=True)
 
 def main():
+    # Get references to the window and it's size
+    window = pyg.display.get_surface()
+    WIDTH, HEIGHT = pyg.display.get_window_size()
+
     # all_nodes is a dictionary that holds every node
     all_nodes = init_nodes()
     cur_center = 'EARTH'
 
     # full_menu is an object that is used for Earth's menu
-    full_menu = FullMenu(window)
+    full_menu = FullMenu()
+
+    # The HUD
+    hud = HUD()
 
     # Create the background star effect
     bg_star_coords = []
@@ -169,10 +164,18 @@ def main():
 
         bg_star_coords.append([x, y, size, corner])
 
-
     # Timekeeping
     clock = pyg.time.Clock()
     FPS = 60
+
+    date = dt.date.today()
+
+    # Custom events
+    new_day = pyg.USEREVENT + 1
+    pyg.time.set_timer(new_day, 5000)
+
+    # Sounds
+    ui_channel = pyg.mixer.find_channel()
 
     while True:
         # Determine whether or not the full menu is showing
@@ -197,13 +200,14 @@ def main():
                     if cur_center != 'EARTH':
                         cur_center = 'EARTH'
 
+            elif event.type == pyg.MOUSEBUTTONDOWN:
+                ui_channel.queue(sounds['down_click'])
+
             elif event.type == pyg.MOUSEBUTTONUP:
-                if full_menu_active:
-                    if event.pos[0] < 200 and event.pos[1] > HEIGHT - 60: # Will need to be changed
-                        cur_center = 'EARTH'
-                else:
-                    if event.pos[0] < 200 and event.pos[1] < 100: # Will need to be changed
-                        cur_center = 'EARTH'
+                ui_channel.queue(sounds['up_click'])
+
+                if hud.arrow_rect.collidepoint(event.pos):
+                    cur_center = 'EARTH'
 
                 for node in all_nodes[cur_center]:
                     if node.is_selected and m_rel == (0, 0):
@@ -217,13 +221,15 @@ def main():
                     if node.is_hovered:
                         if math.dist(event.pos, node.rect.center) <= node.radius:
                             node.is_selected = True
+            elif event.type == new_day:
+                date = date + dt.timedelta(days=1)
 
 
         # Handle held down keys and mouse movement
         event_keys = pyg.key.get_pressed()
         mouse_keys = pyg.mouse.get_pressed()
         m_rel = pyg.mouse.get_rel()
-         # Move all the nodes/stars if a key is pressed
+        # Move all the nodes/stars if a key is pressed
         if event_keys[pyg.K_LEFT] or event_keys[pyg.K_a]:
             for node in all_nodes[cur_center]:
                 node.rect.x += 15
@@ -273,16 +279,18 @@ def main():
                 node.render_menu()
                 break
 
-        # If the current center node doesn't use nodes (e.x. OPS or CYBER), use
-        # a full screen menu
+        # If the current center node doesn't use nodes (e.x. OPS or CYBER),
+        # use a full screen menu
         if len(all_nodes[cur_center]) == 0:
             full_menu.update()
             full_menu.render()
 
-        # Give the user a way back to the main screen
-        render_back_arrow(window, cur_center)
+        # Render HUD elements
+        if cur_center != 'EARTH':
+            hud.render_back_arrow(full_menu_active)
+        hud.render_time(date)
 
-        # Update the display, and don't exceed FPS
+        # Update the display, but don't exceed FPS
         pyg.display.flip()
         clock.tick(FPS)
 
@@ -290,9 +298,8 @@ def main():
 if __name__ == '__main__':
     # Initalize pygame and create a window
     pyg.init()
-    pyg.display.set_caption("Upgrade Tree")
-    window = pyg.display.set_mode(flags=pyg.HWSURFACE | pyg.FULLSCREEN | pyg.DOUBLEBUF)
-    WIDTH, HEIGHT = pyg.display.get_window_size()
+    pyg.display.set_caption("i5 CYBERGAME")
+    pyg.display.set_mode(flags=pyg.HWSURFACE | pyg.FULLSCREEN | pyg.DOUBLEBUF)
 
     # Start the program
     main()
