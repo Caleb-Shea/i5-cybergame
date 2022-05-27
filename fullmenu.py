@@ -6,16 +6,15 @@ from helper_func import *
 
 
 class FullMenu():
-    def __init__(self, window):
+    def __init__(self):
         """
-        Description: A class to represent a single node. The node has a parent,
-                     children, and attributes used for purchasing, inspecting, and
-                     learning about this node.
-        Parameters:
-            window [pyg.Surface] -> A reference to the screen.
-        Returns: None
+        Description: A class to represent a full screen type menu. This type of
+                     menu is used for the nodes connected directly to the Earth,
+                     such as OPS, ACQUISITIONS, and CYBER, among others.
+        Parameters: None
+        Returns: FullMenu()
         """
-        self.window = window
+        self.window = pyg.display.get_surface()
 
         # Create the image for the full menu
         self.rect = self.window.get_rect().inflate(-20, -20)
@@ -70,9 +69,6 @@ class FullMenu():
             # rect coords are based on the topleft of the menu
             if rect.move(10, 10).collidepoint(m_pos) and m_pressed[0]:
                 self.cur_tab = name
-
-                if not self.channel.get_busy():
-                    self.channel.play(sounds['ui_click'])
 
         # Handle tab specific updates
         # Pass mouse info so we don't have to get it more than once a frame
