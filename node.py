@@ -12,15 +12,14 @@ class Node(pyg.sprite.Sprite):
                  children, and attributes used for purchasing, inspecting, and
                  learning about this node.
     Parameters:
-        window [pyg.Surface] -> A reference to the screen.
         data [dict] -> All the data necessary for the creation and use of the
                        node.
-    Returns: None
+    Returns: Node()
     """
-    def __init__(self, window, data):
+    def __init__(self, data):
         super().__init__()
 
-        self.window = window
+        self.window = pyg.display.get_surface()
         self.WIDTH, self.HEIGHT = self.window.get_rect().size
 
         self.data = data
