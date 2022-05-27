@@ -25,10 +25,15 @@ fonts = {'zrnic14': pyg.font.Font(get_path(os.path.join('assets', 'fonts', 'zrni
          'zrnic36': pyg.font.Font(get_path(os.path.join('assets', 'fonts', 'zrnic.ttf')), 36),
          'zrnic48': pyg.font.Font(get_path(os.path.join('assets', 'fonts', 'zrnic.ttf')), 48)}
 
-sounds = {'ui_click': pyg.mixer.Sound(get_path(os.path.join('assets', 'sounds', 'ui_click.wav')))}
+sounds = {'ui_click': pyg.mixer.Sound(get_path(os.path.join('assets', 'sounds', 'ui_click.wav'))),
+          'up_click': pyg.mixer.Sound(get_path(os.path.join('assets', 'sounds', 'up_click.wav'))),
+          'down_click': pyg.mixer.Sound(get_path(os.path.join('assets', 'sounds', 'down_click.wav'))),}
+
+sounds['down_click'].set_volume(.75)
 
 colors = {'clear': pyg.Color(  0,   0,   0,   0),
           'fullmenu': pyg.Color(  5,   0,  30,  150),
+          'hud_bg': pyg.Color(  5,   0,  30,  230),
           'white': pyg.Color(255, 255, 255),
           'starwhite': pyg.Color(230, 230, 230),
           'lightgray': pyg.Color(200, 200, 200),
