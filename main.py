@@ -130,14 +130,15 @@ def render_bg(window, bg_star_coords):
         size = star[2]
         corner = star[3]
 
-        if corner == 1:
-            pyg.draw.circle(window, colors['starwhite'], (x, y), size, draw_top_left=True)
-        elif corner == 2:
-            pyg.draw.circle(window, colors['starwhite'], (x, y), size, draw_top_right=True)
-        elif corner == 3:
-            pyg.draw.circle(window, colors['starwhite'], (x, y), size, draw_bottom_left=True)
-        else:
-            pyg.draw.circle(window, colors['starwhite'], (x, y), size, draw_bottom_right=True)
+        if 0 < x < WIDTH and 0 < y < HEIGHT:
+            if corner == 1:
+                pyg.draw.circle(window, colors['starwhite'], (x, y), size, draw_top_left=True)
+            elif corner == 2:
+                pyg.draw.circle(window, colors['starwhite'], (x, y), size, draw_top_right=True)
+            elif corner == 3:
+                pyg.draw.circle(window, colors['starwhite'], (x, y), size, draw_bottom_left=True)
+            else:
+                pyg.draw.circle(window, colors['starwhite'], (x, y), size, draw_bottom_right=True)
 
 def main():
     # Get references to the window and it's size
