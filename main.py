@@ -12,12 +12,13 @@ import random
 import math
 import os
 
+from game_info import game_info
 from fullmenu import FullMenu
-from node import Node
-from hud import HUD
-from node_data import *
-from assets import *
 from helper_func import *
+from node_data import *
+from node import Node
+from assets import *
+from hud import HUD
 
 
 def init_nodes():
@@ -114,15 +115,17 @@ def zoom_to(node, cur_center):
 
     return cur_center
 
-def render_bg(window, bg_star_coords):
+def render_bg(bg_star_coords):
     """
     Description: Render a faux starscape.
     Parameters:
-    window [pyg.Surface] -> The surface to draw on
-    bg_star_coords [list] -> A list containing coordinates and size data
-    for each star
+        bg_star_coords [list] -> A list containing coordinates and size data
+                                 for each star
     Returns: None
     """
+    window = pyg.display.get_surface()
+    WIDTH, HEIGHT = window.get_rect().size
+
     for star in bg_star_coords:
         # Unpack the list
         x = star[0]
@@ -151,19 +154,24 @@ def main():
 
     # full_menu is an object that is used for Earth's menu
     full_menu = FullMenu()
-
+    
     # The HUD
     hud = HUD()
 
     # Create the background star effect
     bg_star_coords = []
     for i in range(10000):
+        # Coords
         x = random.randint(-WIDTH, 2 * WIDTH)
         y = random.randint(-HEIGHT, 2 * HEIGHT)
-        size = random.random() + 1.5
+        # Moves some stars farther away and brings some closer
+        dist = random.random() + 0.5
+        # Size, based on the distance
+        size = 1.5*dist + random.random()
+        # Which corner of the circle to render (creats a more interesting shape)
         corner = random.randint(1, 4)
 
-        bg_star_coords.append([x, y, size, corner])
+        bg_star_coords.append([x, y, size, corner, dist])
 
     # Timekeeping
     clock = pyg.time.Clock()
@@ -194,7 +202,8 @@ def main():
                 if event.key == pyg.K_BACKQUOTE:
                     terminate()
                 elif event.key == pyg.K_SPACE:
-                    ...
+                    game_info['cash'] += 20000
+                    game_info['reputation'] += 20
 
             elif event.type == pyg.KEYUP:
                 if event.key == pyg.K_ESCAPE:
@@ -203,6 +212,10 @@ def main():
 
             elif event.type == pyg.MOUSEBUTTONDOWN:
                 ui_channel.queue(sounds['down_click'])
+                full_menu.update()
+
+            elif event.type == pyg.MOUSEMOTION:
+                full_menu.update() # This is sketch af but I'm leaving it for now
 
             elif event.type == pyg.MOUSEBUTTONUP:
                 ui_channel.queue(sounds['up_click'])
@@ -236,25 +249,25 @@ def main():
                 node.rect.x += 15
             if not full_menu_active: # Find a better way to do this
                 for star in bg_star_coords:
-                    star[0] += 1.5 # Move the nodes less for a parallax effect
+                    star[0] += 1.5 * star[4] # Move the nodes less for a parallax effect
         if event_keys[pyg.K_RIGHT] or event_keys[pyg.K_d]:
             for node in all_nodes[cur_center]:
                 node.rect.x -= 15
             if not full_menu_active:
                 for star in bg_star_coords:
-                    star[0] -= 1.5
+                    star[0] -= 1.5 * star[4]
         if event_keys[pyg.K_UP] or event_keys[pyg.K_w]:
             for node in all_nodes[cur_center]:
                 node.rect.y += 15
             if not full_menu_active:
                 for star in bg_star_coords:
-                    star[1] += 1.5
+                    star[1] += 1.5 * star[4]
         if event_keys[pyg.K_DOWN] or event_keys[pyg.K_s]:
             for node in all_nodes[cur_center]:
                 node.rect.y -= 15
             if not full_menu_active:
                 for star in bg_star_coords:
-                    star[1] -= 1.5
+                    star[1] -= 1.5 * star[4]
         # Move all the nodes/stars if the mouse is dragged
         if mouse_keys[0]:
             for node in all_nodes[cur_center]:
@@ -262,17 +275,24 @@ def main():
                 node.rect.y += m_rel[1]
             if not full_menu_active:
                 for star in bg_star_coords:
-                    star[0] += m_rel[0] * .1
-                    star[1] += m_rel[1] * .1
+                    star[0] += m_rel[0] * .1 * star[4]
+                    star[1] += m_rel[1] * .1 * star[4]
 
         # Render the background
         window.fill(colors['space'])
-        render_bg(window, bg_star_coords)
+        render_bg(bg_star_coords)
 
         # Update and render all the nodes
         for node in all_nodes[cur_center]:
             node.update()
             node.render()
+
+        # If the earth is selected, render it's menu
+        for node in all_nodes[cur_center]:
+            if node.is_selected and node.data['name'] == 'EARTH':
+                hud.render_vignette('left')
+                hud.render_earth_menu()
+                break
 
         # If a node is selected, render it's menu
         for node in all_nodes[cur_center]:
@@ -283,13 +303,15 @@ def main():
         # If the current center node doesn't use nodes (e.x. OPS or CYBER),
         # use a full screen menu
         if len(all_nodes[cur_center]) == 0:
-            full_menu.update()
+            # full_menu.update()
             full_menu.render()
 
         # Render HUD elements
         if cur_center != 'EARTH':
             hud.render_back_arrow(full_menu_active)
         hud.render_time(date)
+        hud.render_reputation()
+        hud.render_cash()
 
         # Update the display, but don't exceed FPS
         pyg.display.flip()
