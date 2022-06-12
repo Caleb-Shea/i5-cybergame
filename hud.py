@@ -1,7 +1,8 @@
 import pygame as pyg
 
-from assets import *
 from helper_func import *
+from game_info import game_info
+from assets import *
 
 
 class HUD():
@@ -17,16 +18,62 @@ class HUD():
         self.window = pyg.display.get_surface()
         self.WIDTH, self.HEIGHT = self.window.get_rect().size
 
-        # Back arrow init
+        # --- Back arrow init ---
         text = fonts['zrnic48'].render("<--- EARTH", True, colors['starwhite'])
         # Create a surface big enough for the text and a border
         self.arrow = pyg.Surface(text.get_rect().inflate(16, -2).size).convert_alpha()
         self.arrow.fill(colors['hud_bg'])
 
-        # Position the text in the middle of the inflation
+        # Position the text in the middle of the surface
         self.arrow.blit(text, (8, -1))
         self.arrow_rect = self.arrow.get_rect()
         pyg.draw.rect(self.arrow, colors['rose'], self.arrow_rect, 2)
+
+        # The below code creates images that are static, and therefore can be
+        # created only once
+
+        # --- Earth menu init ---
+        self.e_menu = pyg.Surface(self.window.get_rect().size).convert_alpha()
+        self.e_menu.fill(colors['clear'])
+
+        # Render the menu headings
+        text = fonts['zrnic42'].render("STATS:", True, colors['starwhite'])
+        self.e_menu.blit(text, (30, 20))
+
+        # --- Vignette init ---
+        # Left side
+        vig1_points = [(0, 0), (0, self.HEIGHT), (self.WIDTH//3, self.HEIGHT),
+                       (self.WIDTH//4, self.HEIGHT//1.6), (self.WIDTH//4, self.HEIGHT//3),
+                       (self.WIDTH//3, 0), (0, 0)]
+        self.vignette_l = pyg.Surface(self.window.get_rect().size).convert_alpha()
+        self.vignette_l.fill(colors['clear'])
+        pyg.draw.polygon(self.vignette_l, colors['vignette'], vig1_points)
+        pyg.draw.polygon(self.vignette_l, colors['vignette_b'], vig1_points, 10)
+
+        # Right side
+        vig2_points = [(self.WIDTH, 0), (self.WIDTH, self.HEIGHT), (2*self.WIDTH//3, self.HEIGHT),
+                       (3*self.WIDTH//4, self.HEIGHT//1.6), (3*self.WIDTH//4, self.HEIGHT//3),
+                       (2*self.WIDTH//3, 0), (self.WIDTH, 0)]
+        self.vignette_r = pyg.Surface(self.window.get_rect().size).convert_alpha()
+        self.vignette_r.fill(colors['clear'])
+        pyg.draw.polygon(self.vignette_r, colors['vignette'], vig2_points)
+        pyg.draw.polygon(self.vignette_r, colors['vignette_b'], vig2_points, 10)
+
+    def render_vignette(self, side):
+        """
+        Description: Render a vignette on either side of the screen. For
+                     dramatic purposes.
+        Parameters:
+            side [str] -> The side of the screen to render a vignette on.
+                          Options are 'left', 'right', and 'both'
+                          If side is not 'left' or 'right', it will render both
+        Returns: None
+        """
+        if side != 'right':
+            self.window.blit(self.vignette_l, (0, 0))
+
+        if side != 'left':
+            self.window.blit(self.vignette_r, (0, 0))
 
     def render_back_arrow(self, full_menu_active):
         """
@@ -53,16 +100,111 @@ class HUD():
             date [dt.date] -> The current in-game date
         Returns: None
         """
+        # Create an object specifially for the text that will be rendered
         date_str = date.strftime("%d %B, %Y")
         img = fonts['zrnic24'].render(date_str, True, colors['starwhite'])
         rect = img.get_rect()
         rect.bottomright = (self.WIDTH - 7, self.HEIGHT - 6)
 
+        # Create a bg that is slightly bigger than the text
         date_bg = pyg.Surface(rect.inflate(15, 10).size).convert_alpha()
         date_bg.fill(colors['hud_bg'])
         dbg_rect = date_bg.get_rect()
         dbg_rect.bottomright = (self.WIDTH, self.HEIGHT)
 
+        # Render the bg, a border, and the text
         self.window.blit(date_bg, dbg_rect)
         pyg.draw.rect(self.window, colors['rose'], dbg_rect, width=1)
+        self.window.blit(img, rect)
+
+    def render_reputation(self):
+        """
+        Description: Render current amount of reputation the player has, right
+                     above the current time.
+        Parameters: None
+        Returns: None
+        """
+        # Create an object specifially for the text that will be rendered
+        img = fonts['zrnic24'].render(f"Reputation: {game_info['reputation']:,}", True, colors['starwhite'])
+        rect = img.get_rect()
+        rect.bottomright = (self.WIDTH - 7, self.HEIGHT - 46)
+
+        # Create a bg that is slightly bigger than the text
+        date_bg = pyg.Surface(rect.inflate(15, 10).size).convert_alpha()
+        date_bg.fill(colors['hud_bg'])
+        dbg_rect = date_bg.get_rect()
+        dbg_rect.bottomright = (self.WIDTH, self.HEIGHT - 40)
+
+        # Render the bg, a border, and the text
+        self.window.blit(date_bg, dbg_rect)
+        pyg.draw.rect(self.window, colors['rose'], dbg_rect, width=1)
+        self.window.blit(img, rect)
+
+    def render_cash(self):
+        """
+        Description: Render current amount of cash the player has, right above
+                     the current reputation.
+        Parameters: None
+        Returns: None
+        """
+        # Create an object specifially for the text that will be rendered
+        img = fonts['zrnic24'].render(f"Cash: {game_info['cash']:,}", True, colors['starwhite'])
+        rect = img.get_rect()
+        rect.bottomright = (self.WIDTH - 7, self.HEIGHT - 86)
+
+        # Create a bg that is slightly bigger than the text
+        date_bg = pyg.Surface(rect.inflate(15, 10).size).convert_alpha()
+        date_bg.fill(colors['hud_bg'])
+        dbg_rect = date_bg.get_rect()
+        dbg_rect.bottomright = (self.WIDTH, self.HEIGHT - 80)
+
+        # Render the bg, a border, and the text
+        self.window.blit(date_bg, dbg_rect)
+        pyg.draw.rect(self.window, colors['rose'], dbg_rect, width=1)
+        self.window.blit(img, rect)
+
+    def render_earth_menu(self):
+        """
+        Description: Render a button that, when clicked, shows the player's
+                     stats.
+        Parameters: None
+        Returns: None
+        """
+        self.window.blit(self.e_menu, (0, 0))
+
+        # --- Stats ---
+        # Budget
+        img = fonts['zrnic26'].render(f"- Budget: {game_info['budget']:,}", True, colors['starwhite'])
+        rect = img.get_rect()
+        rect.topleft = (50, 70)
+        self.window.blit(img, rect)
+
+        # Num Satellites
+        img = fonts['zrnic26'].render(f"- Num Satellites: {game_info['num_sats']:,}", True, colors['starwhite'])
+        rect = img.get_rect()
+        rect.topleft = (50, 100)
+        self.window.blit(img, rect)
+
+        # Num Personnel
+        img = fonts['zrnic26'].render(f"- Num Personnel: {game_info['num_personnel']:,}", True, colors['starwhite'])
+        rect = img.get_rect()
+        rect.topleft = (50, 130)
+        self.window.blit(img, rect)
+
+        # Max Budget
+        img = fonts['zrnic26'].render(f"- Max Budget: {game_info['max_budget']:,}", True, colors['starwhite'])
+        rect = img.get_rect()
+        rect.topleft = (50, 160)
+        self.window.blit(img, rect)
+
+        # Total Cash
+        img = fonts['zrnic26'].render(f"- Total Cash Earned: {game_info['total_cash']:,}", True, colors['starwhite'])
+        rect = img.get_rect()
+        rect.topleft = (50, 190)
+        self.window.blit(img, rect)
+
+        # Max Personnel
+        img = fonts['zrnic26'].render(f"- Max Personnel: {game_info['max_personnel']:,}", True, colors['starwhite'])
+        rect = img.get_rect()
+        rect.topleft = (50, 220)
         self.window.blit(img, rect)
