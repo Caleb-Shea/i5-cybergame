@@ -3,6 +3,7 @@ import pygame as pyg
 import fullmenu_data
 from assets import *
 from helper_func import *
+from game_info import game_info
 
 
 class FullMenu():
@@ -40,6 +41,7 @@ class FullMenu():
         self.channel = pyg.mixer.find_channel()
 
         # Tab specific initalization
+        # --- Intel tab ---
         self.hovered_brief_id = -1
         self.selected_brief_id = -1
         self.brief_buy_timer = 0
@@ -53,6 +55,24 @@ class FullMenu():
             size = (360, 100)
             rect = pyg.rect.Rect((0, 0), size)
             self.brief_rects.append(rect)
+
+        # --- Acquisitions tab ---
+        self.sats = fullmenu_data.sats
+        self.hovered_sat = -1
+        self.selected_sat = -1
+        self.sat_rects = []
+        for i in range(9):
+            size = (250, 55)
+            rect = pyg.rect.Rect((100, 100 + (500/9)*i), size)
+            self.sat_rects.append(rect)
+
+        # Static rects that only need to be made once
+        self.acq_sel_rect = pyg.rect.Rect(100, 100, 250, 500)
+        self.acq_info_rect = pyg.rect.Rect(380, 100, 800, 500)
+        self.acq_pic_rect = pyg.rect.Rect(400, 150, 400, 400)
+        self.acq_descbg_rect = pyg.rect.Rect(830, 110, 310, 480)
+        self.acq_desc_rect = pyg.rect.Rect(840, 180, 290, 400)
+        self.acq_button_rect = pyg.rect.Rect(840, 510, 290, 70)
 
     def update(self):
         """
@@ -74,11 +94,16 @@ class FullMenu():
         # Pass mouse info so we don't have to get it more than once a frame
         if self.cur_tab == 'INTEL':
             self.update_intel(m_pos, m_pressed)
+        elif self.cur_tab == 'ACQUISITIONS':
+            self.update_acq(m_pos, m_pressed)
 
     def update_intel(self, m_pos, m_pressed):
         """
         Description: Handle events specific to the intel tab.
-        Parameters: None
+        Parameters:
+            m_pos [tuple] -> The current position of the mouse
+            m_pressed [tuple] -> Contains booleans that represent the mouse
+                                 buttons
         Returns: None
         """
         # Set the positions of the brief buttons
@@ -94,7 +119,7 @@ class FullMenu():
         # Handle mouse clicks
         if m_pressed[0]:
             # Check if any briefs have been clicked on
-            for i, rect, brief in zip(range(len(self.cur_briefs)), self.brief_rects, self.cur_briefs):
+            for i, rect in enumerate(self.brief_rects):
                 # We move the rect because the mouse coords are absolute, but the
                 # rect coords are based on the topleft of the menu
                 if rect.move(10, 10).collidepoint(m_pos):
@@ -179,6 +204,101 @@ class FullMenu():
 
                 self.image.blit(tt, ttrect)
 
+    def update_acq(self, m_pos, m_pressed):
+        """
+        Description: Handle events specific to the acquisitions tab.
+        Parameters:
+            m_pos [tuple] -> The current position of the mouse
+            m_pressed [tuple] -> Contains booleans that represent the mouse
+                                 buttons
+        Returns: None
+        """
+        # Detect hovering
+        for i, rect in enumerate(self.sat_rects):
+            if rect.move(10, 10).collidepoint(m_pos):
+                # We move the rect because these rects are not based on the
+                # main window
+                self.hovered_sat = i
+                break
+        else:
+            self.hovered_sat = -1
+
+        # Detect clicks
+        if m_pressed[0]:
+            for i, rect in enumerate(self.sat_rects):
+                if rect.move(10, 10).collidepoint(m_pos):
+                    self.selected_sat = i
+                    break
+                if self.acq_descbg_rect.move(10, 10).collidepoint(m_pos):
+                    break
+                if self.acq_pic_rect.move(10, 10).collidepoint(m_pos):
+                    break
+            else:
+                self.selected_sat = -1
+
+            if self.selected_sat != -1:
+                if self.acq_button_rect.move(10, 10).collidepoint(m_pos):
+                    new_sat = self.sats[self.selected_sat]
+
+                    game_info['num_sats'] += 1
+                    game_info['cash'] -= new_sat['money_cost']
+                    game_info['sats_owned'].append(new_sat)
+
+    def render_acq(self):
+        """
+        Description: Draw the menu for the acquisitions tab.
+        Parameters: None
+        Returns: None
+        """
+        pyg.draw.rect(self.image, colors['lightgray'], self.acq_sel_rect)
+        pyg.draw.rect(self.image, colors['blue'], self.acq_info_rect)
+        pyg.draw.rect(self.image, colors['gray'], self.acq_pic_rect)
+        pyg.draw.rect(self.image, colors['lightgray'], self.acq_descbg_rect)
+
+        for i, rect in enumerate(self.sat_rects): # Rects
+            # Draw the button itself
+            if i == self.hovered_sat or i == self.selected_sat:
+                pyg.draw.rect(self.image, colors['yellow'], rect)
+            else:
+                pyg.draw.rect(self.image, colors['orange'], rect)
+
+            # Draw the name of the satellite on it's own button
+            list_text = fonts['zrnic26'].render(self.sats[i]['name'], True, colors['black'])
+            self.image.blit(list_text, list_text.get_rect(center=rect.center))
+
+        for i in range(9): # Divider lines
+            pyg.draw.line(self.image, colors['lime'],
+                         (100, 100 + (500/9)*i), (349, 100 + (500/9)*i), 3)
+        # Border
+        pyg.draw.rect(self.image, colors['lime'], (100, 100, 250, 500), 3)
+
+
+        if self.selected_sat != -1: # If there is a selected satellite
+            cur_sat = self.sats[self.selected_sat] # Get the info for the current satellite
+            # Satellite image
+            # Placeholder text
+            pic_text = fonts['zrnic80'].render('SAT PICTURE', True, colors['black'])
+            self.image.blit(pic_text, (420, 300))
+
+            # Name
+            name_text = fonts['zrnic42'].render(cur_sat['name'], True, colors['black'])
+            self.image.blit(name_text, (840, 115))
+
+            # Draw a line under the name
+            pyg.draw.line(self.image, colors['cyan'], (835, 170), (1135, 170), 3)
+
+            # Description
+            desc = word_wrap(cur_sat['desc'], fonts['zrnic30'],
+                             colors['black'], self.acq_desc_rect)
+            self.image.blit(desc, self.acq_desc_rect)
+
+            # Buy button
+            pyg.draw.rect(self.image, colors['pink'], self.acq_button_rect)
+
+            # Cost of satellite
+            cash_cost = fonts['zrnic26'].render(f"Purchase: {self.sats[self.selected_sat]['money_cost']}", True, colors['black'])
+            self.image.blit(cash_cost, cash_cost.get_rect(center=self.acq_button_rect.center))
+
     def render_tabs(self):
         """
         Description: Draw the tabs at the top of the screen.
@@ -216,6 +336,8 @@ class FullMenu():
         self.render_tabs()
         if self.cur_tab == 'INTEL':
             self.render_intel()
+        elif self.cur_tab == 'ACQUISITIONS':
+            self.render_acq()
 
         # Blit to the screen
         self.window.blit(self.image, self.rect)

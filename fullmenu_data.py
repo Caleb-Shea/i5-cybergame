@@ -29,7 +29,18 @@ for i in range(20):
 
 
 #ACQUISITIONS
+names = ['GSSAP', 'GPS', 'ISS', 'AEHF']
+money_costs = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+personnel_required = [1, 2, 3, 4, 5]
+descs = ['Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.', 'Make things go BOOM.']
 
+sats = []
+for i in range(9):
+    sat = {'name': random.choice(names),
+           'money_cost': random.choice(costs),
+           'personnel_required': random.choice(personnel_required),
+           'desc': random.choice(descs)}
+    sats.append(sat)
 
 # OPS
 
