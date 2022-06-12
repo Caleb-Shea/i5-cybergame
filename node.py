@@ -44,11 +44,11 @@ class Node(pyg.sprite.Sprite):
         self.menu.fill(colors['clear'])
         name_img = fonts['zrnic36'].render(self.data['name'], True, colors['white'])
         name_rect = name_img.get_rect()
-        name_rect.center = (self.WIDTH//3, 30)
+        name_rect.center = (self.WIDTH//2, 30)
         self.menu.blit(name_img, name_rect)
         desc_img = fonts['zrnic24'].render(self.data['desc'], True, colors['white'])
         desc_rect = desc_img.get_rect()
-        desc_rect.center = (self.WIDTH//3, 70)
+        desc_rect.center = (self.WIDTH//2, 70)
         self.menu.blit(desc_img, desc_rect)
 
         # All booleans required for the node to function
