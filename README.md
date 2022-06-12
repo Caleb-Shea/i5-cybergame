@@ -51,6 +51,10 @@ Leaning towards Russia/China situation
 
 ### Todo list:
 - Move node menus to the HUD class
+- Restructure HUD rendering to limit functions
+- Add scroll limits
+- [FullMenu] Move logic from render_XXX() to update_XXX()
+- Easter eggs :)
 
 ## Credits:
 - https://freesound.org/people/EminYILDIRIM/sounds/536108/
