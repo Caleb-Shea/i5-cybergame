@@ -6,6 +6,8 @@ terminate()
 get_path(path)
 play_sound(sound, channel=None)
 word_wrap(text, font, color, rect)
+num_to_roman(num)
+debug_render(value)
 """
 
 
@@ -91,3 +93,42 @@ def word_wrap(text, font, color, rect):
         y += line.get_rect().height * 1.1
 
     return surf
+
+def num_to_roman(num):
+    """
+    Description: Convert an integer to roman numeral format.
+    Parameters:
+        num [int] -> The number to convert
+    Returns:
+        [str] -> A string containing the roman numeral notation
+
+    Credit:
+        Copied from https://stackoverflow.com/a/47713392
+    """
+    ROMAN = [(1000, "M"), (900, "CM"), (500, "D"), (400, "CD"), (100, "C"),
+             (90, "XC"), (50, "L"), (40, "XL"), (10, "X"), (9, "IX"), (5, "V"),
+             (4, "IV"), (1, "I")]
+    result = ""
+    for (arabic, roman) in ROMAN:
+        (factor, num) = divmod(num, arabic)
+        result += roman * factor
+    return result
+
+def debug_render(value):
+    """
+    Description: Render a given value on the screen for debugging purposes.
+    Parameters:
+        value [almost anything] -> The thing to render
+    Returns: None
+    """
+    window = pyg.display.get_surface()
+
+    font_name = pyg.font.get_default_font()
+    font = pyg.font.SysFont(font_name, 24)
+    image = font.render(f"{value}", True, (255, 255, 255))
+    rect = image.get_rect(topleft=(0, 0))
+    bg = pyg.Surface(rect.inflate(20, 20).size)
+    bg.fill((0, 0, 0))
+
+    window.blit(bg, rect.move(-10, -10))
+    window.blit(image, rect)
