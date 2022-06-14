@@ -115,18 +115,18 @@ def zoom_to(node, cur_center):
 
     return cur_center
 
-def render_bg(bg_star_coords):
+def render_bg(bg_stars):
     """
     Description: Render a faux starscape.
     Parameters:
-        bg_star_coords [list] -> A list containing coordinates and size data
+        bg_stars [list] -> A list containing coordinates and size data
                                  for each star
     Returns: None
     """
     window = pyg.display.get_surface()
     WIDTH, HEIGHT = window.get_rect().size
 
-    for star in bg_star_coords:
+    for star in bg_stars:
         # Unpack the list
         x = star[0]
         y = star[1]
@@ -143,6 +143,47 @@ def render_bg(bg_star_coords):
             else:
                 pyg.draw.circle(window, colors['starwhite'], (x, y), size, draw_bottom_right=True)
 
+def scroll_to_earth(earth, all_nodes, bg_stars):
+    """
+    Description: Scroll the screen until the earth is at the center.
+    Parameters:
+        earth [Node] -> A reference to earth
+        all_nodes [dict] -> A dictionary that contains all the nodes
+        bg_stars [list] -> A list that contains the bg stars information.
+    Returns:
+        [bool] -> Return true if the earth has reached the center of the screen
+    """
+
+    # Calculate offsets
+    WIDTH, HEIGHT = pyg.display.get_window_size()
+    x_offset = earth.rect.centerx - WIDTH/2
+    y_offset = earth.rect.centery - HEIGHT/2
+
+    # Due to rounding errors in rect movement, we need to add 20 to the offset
+    x_offset += math.copysign(20, x_offset)
+    y_offset += math.copysign(20, y_offset)
+
+    # Use a sigmoid function to collapse distances to a -1-1 range
+    x_sig = -2/(1 + math.e**(-0.001 * x_offset)) + 1
+    y_sig = -2/(1 + math.e**(-0.001 * y_offset)) + 1 # For performance, 3 could also work in place of e
+
+    # Convert those values to amounts to move earth by
+    x_move = x_sig * 100
+    y_move = y_sig * 100
+
+    # Move everything
+    if abs(x_offset) > 20 or abs(y_offset) > 20:
+        for node in all_nodes['EARTH']:
+            node.rect.move_ip(x_move, y_move)
+
+        for star in bg_stars:
+            star[0] += x_move * .06 * star[4]
+            star[1] += y_move * .06 * star[4]
+
+        return False
+    else:
+        return True
+
 def main():
     # Get references to the window and it's size
     window = pyg.display.get_surface()
@@ -152,14 +193,20 @@ def main():
     all_nodes = init_nodes()
     cur_center = 'EARTH'
 
+    # Grab a reference to the earth
+    for node in all_nodes['EARTH']:
+        if node.data['name'] == 'EARTH':
+            earth = node
+            break
+
     # full_menu is an object that is used for Earth's menu
     full_menu = FullMenu()
-    
+
     # The HUD
     hud = HUD()
 
     # Create the background star effect
-    bg_star_coords = []
+    bg_stars = []
     for i in range(10000):
         # Coords
         x = random.randint(-WIDTH, 2 * WIDTH)
@@ -171,7 +218,10 @@ def main():
         # Which corner of the circle to render (creats a more interesting shape)
         corner = random.randint(1, 4)
 
-        bg_star_coords.append([x, y, size, corner, dist])
+        bg_stars.append([x, y, size, corner, dist])
+
+    # Trackers
+    done_scrolling = True
 
     # Timekeeping
     clock = pyg.time.Clock()
@@ -182,9 +232,12 @@ def main():
     # Custom events
     new_day = pyg.USEREVENT + 1
     pyg.time.set_timer(new_day, 5000)
+    new_news_event = pyg.USEREVENT + 2
+    pyg.time.set_timer(new_news_event, 2000)
 
     # Sounds
     ui_channel = pyg.mixer.find_channel()
+    soundtrack_channel = pyg.mixer.find_channel()
 
     while True:
         # Determine whether or not the full menu is showing
@@ -205,6 +258,10 @@ def main():
                     game_info['cash'] += 20000
                     game_info['reputation'] += 20
 
+                elif event.key == pyg.K_e:
+                    if cur_center == 'EARTH':
+                        done_scrolling = False
+
             elif event.type == pyg.KEYUP:
                 if event.key == pyg.K_ESCAPE:
                     if cur_center != 'EARTH':
@@ -212,13 +269,14 @@ def main():
 
             elif event.type == pyg.MOUSEBUTTONDOWN:
                 ui_channel.queue(sounds['down_click'])
-                full_menu.update()
+                full_menu.update(True)
 
             elif event.type == pyg.MOUSEMOTION:
-                full_menu.update() # This is sketch af but I'm leaving it for now
+                ...
 
             elif event.type == pyg.MOUSEBUTTONUP:
                 ui_channel.queue(sounds['up_click'])
+                full_menu.update(True)
 
                 if hud.arrow_rect.collidepoint(event.pos):
                     cur_center = 'EARTH'
@@ -235,9 +293,12 @@ def main():
                     if node.is_hovered:
                         if math.dist(event.pos, node.rect.center) <= node.radius:
                             node.is_selected = True
+
             elif event.type == new_day:
                 date = date + dt.timedelta(days=1)
 
+            elif event.type == new_news_event:
+                hud.ticker.new_event()
 
         # Handle held down keys and mouse movement
         event_keys = pyg.key.get_pressed()
@@ -248,25 +309,25 @@ def main():
             for node in all_nodes[cur_center]:
                 node.rect.x += 15
             if not full_menu_active: # Find a better way to do this
-                for star in bg_star_coords:
+                for star in bg_stars:
                     star[0] += 1.5 * star[4] # Move the nodes less for a parallax effect
         if event_keys[pyg.K_RIGHT] or event_keys[pyg.K_d]:
             for node in all_nodes[cur_center]:
                 node.rect.x -= 15
             if not full_menu_active:
-                for star in bg_star_coords:
+                for star in bg_stars:
                     star[0] -= 1.5 * star[4]
         if event_keys[pyg.K_UP] or event_keys[pyg.K_w]:
             for node in all_nodes[cur_center]:
                 node.rect.y += 15
             if not full_menu_active:
-                for star in bg_star_coords:
+                for star in bg_stars:
                     star[1] += 1.5 * star[4]
         if event_keys[pyg.K_DOWN] or event_keys[pyg.K_s]:
             for node in all_nodes[cur_center]:
                 node.rect.y -= 15
             if not full_menu_active:
-                for star in bg_star_coords:
+                for star in bg_stars:
                     star[1] -= 1.5 * star[4]
         # Move all the nodes/stars if the mouse is dragged
         if mouse_keys[0]:
@@ -274,13 +335,17 @@ def main():
                 node.rect.x += m_rel[0]
                 node.rect.y += m_rel[1]
             if not full_menu_active:
-                for star in bg_star_coords:
-                    star[0] += m_rel[0] * .1 * star[4]
-                    star[1] += m_rel[1] * .1 * star[4]
+                for star in bg_stars:
+                    star[0] += m_rel[0] * .06 * star[4]
+                    star[1] += m_rel[1] * .06 * star[4]
+
+        # If the 'e' key is down, scroll to the earth
+        if not done_scrolling:
+            done_scrolling = scroll_to_earth(earth, all_nodes, bg_stars)
 
         # Render the background
         window.fill(colors['space'])
-        render_bg(bg_star_coords)
+        render_bg(bg_stars)
 
         # Update and render all the nodes
         for node in all_nodes[cur_center]:
@@ -303,7 +368,7 @@ def main():
         # If the current center node doesn't use nodes (e.x. OPS or CYBER),
         # use a full screen menu
         if len(all_nodes[cur_center]) == 0:
-            # full_menu.update()
+            full_menu.update()
             full_menu.render()
 
         # Render HUD elements
@@ -312,6 +377,7 @@ def main():
         hud.render_time(date)
         hud.render_reputation()
         hud.render_cash()
+        hud.ticker.render()
 
         # Update the display, but don't exceed FPS
         pyg.display.flip()

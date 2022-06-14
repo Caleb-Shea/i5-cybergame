@@ -1,7 +1,8 @@
 import pygame as pyg
 
-from helper_func import *
 from game_info import game_info
+from ticker import Ticker
+from helper_func import *
 from assets import *
 
 
@@ -16,7 +17,10 @@ class HUD():
         """
         # Create a reference to the main window and it's size meaurements
         self.window = pyg.display.get_surface()
-        self.WIDTH, self.HEIGHT = self.window.get_rect().size
+        self.WIDTH, self.HEIGHT = pyg.display.get_window_size()
+
+        # Create a news/event ticker
+        self.ticker = Ticker()
 
         # --- Back arrow init ---
         text = fonts['zrnic48'].render("<--- EARTH", True, colors['starwhite'])
@@ -29,7 +33,7 @@ class HUD():
         self.arrow_rect = self.arrow.get_rect()
         pyg.draw.rect(self.arrow, colors['rose'], self.arrow_rect, 2)
 
-        # The below code creates images that are static, and therefore can be
+        # The below code creates images that are static, and therefore are
         # created only once
 
         # --- Earth menu init ---
