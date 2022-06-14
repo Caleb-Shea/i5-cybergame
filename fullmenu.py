@@ -1,9 +1,9 @@
 import pygame as pyg
 
 import fullmenu_data
-from assets import *
 from helper_func import *
-from game_info import game_info
+from game_info import *
+from assets import *
 
 
 class FullMenu():
@@ -20,7 +20,7 @@ class FullMenu():
         # Create the image for the full menu
         self.rect = self.window.get_rect().inflate(-20, -20)
         self.image_base = pyg.Surface(self.rect.size).convert_alpha()
-        self.image_base.fill(colors['fullmenu'])
+        self.image_base.fill(colors['clear'])
         pyg.draw.rect(self.image_base, colors['rose'], ((0, 0), self.rect.size), 5) # On larger displays this breaks
 
         # self.image is the surface where everything happens, and self.image_base
@@ -28,8 +28,8 @@ class FullMenu():
         self.image = self.image_base
 
         # Create tabs
-        self.tab_names = ['ACQUISITIONS', 'OPS', 'PERSONNEL',
-                          'INTEL', 'CYBER', 'RESEARCH']
+        self.tab_names = ['ACQUISITIONS', 'OPS', 'INTEL', 'CYBER', 'PERSONNEL',
+                          'EVENTS']
         self.tab_rects = []
         for i in range(len(self.tab_names)):
             x_size = self.rect.width//len(self.tab_names)
@@ -42,6 +42,7 @@ class FullMenu():
 
         # Tab specific initalization
         # --- Intel tab ---
+        self.intel_bg_rect = pyg.rect.Rect(5, 52, 1250, 645)
         self.hovered_brief_id = -1
         self.selected_brief_id = -1
         self.brief_buy_timer = 0
@@ -67,6 +68,7 @@ class FullMenu():
             self.sat_rects.append(rect)
 
         # Static rects that only need to be made once
+        self.acq_bg_rect = pyg.rect.Rect(5, 52, 1250, 645)
         self.acq_sel_rect = pyg.rect.Rect(100, 100, 250, 500)
         self.acq_info_rect = pyg.rect.Rect(380, 100, 800, 500)
         self.acq_pic_rect = pyg.rect.Rect(400, 150, 400, 400)
@@ -74,36 +76,27 @@ class FullMenu():
         self.acq_desc_rect = pyg.rect.Rect(840, 180, 290, 400)
         self.acq_button_rect = pyg.rect.Rect(840, 510, 290, 70)
 
-    def update(self):
-        """
-        Description: Detect mouse clicks and update active tab.
-        Parameters: None
-        Returns: None
-        """
-        # Switch tabs if the mouse clicks on one
-        m_pos = pyg.mouse.get_pos()
-        m_pressed = pyg.mouse.get_pressed()
-        for rect, name in zip(self.tab_rects, self.tab_names):
-            # If a tab is clicked on, select it
-            # We move the rect because the mouse coords are absolute, but the
-            # rect coords are based on the topleft of the menu
-            if rect.move(10, 10).collidepoint(m_pos) and m_pressed[0]:
-                self.cur_tab = name
+        # --- Cyber tab ---
+        self.cyber_def_rect = pyg.rect.Rect(5, 52, 630, 645)
+        self.cyber_off_rect = pyg.rect.Rect(630, 52, 625, 645)
+        self.cyber_def_header = pyg.rect.Rect(30, 60, 300, 70)
+        self.cyber_off_header = pyg.rect.Rect(930, 60, 300, 70)
 
-        # Handle tab specific updates
-        # Pass mouse info so we don't have to get it more than once a frame
-        if self.cur_tab == 'INTEL':
-            self.update_intel(m_pos, m_pressed)
-        elif self.cur_tab == 'ACQUISITIONS':
-            self.update_acq(m_pos, m_pressed)
+        # --- Ops tab ---
 
-    def update_intel(self, m_pos, m_pressed):
+        # --- Personnel tab ---
+
+        # --- Events tab ---
+
+
+    def update_intel(self, m_pos, m_pressed, is_click):
         """
         Description: Handle events specific to the intel tab.
         Parameters:
             m_pos [tuple] -> The current position of the mouse
             m_pressed [tuple] -> Contains booleans that represent the mouse
                                  buttons
+            is_click [bool] -> True on the first frame of a mouseclick event
         Returns: None
         """
         # Set the positions of the brief buttons
@@ -155,6 +148,9 @@ class FullMenu():
         Parameters: None
         Returns: None
         """
+        # Draw bg
+        pyg.draw.rect(self.image, colors['intel_bg'], self.intel_bg_rect)
+
         # Create buttons for each of the current briefs
         for brief, rect in zip(self.cur_briefs, self.brief_rects):
             # If it's expensive, make it a different color
@@ -165,7 +161,7 @@ class FullMenu():
 
             # If a brief is clicked and held, fade to black
             if self.selected_brief_id == self.cur_briefs.index(brief):
-                c = colors['fullmenu'].lerp(c, 1 - min(self.brief_buy_timer/30, 1))
+                c = colors['intel_bg'].lerp(c, 1 - min(self.brief_buy_timer/30, 1))
 
             pyg.draw.rect(self.image, c, rect)
 
@@ -194,7 +190,7 @@ class FullMenu():
                 # Text
                 name = fonts['zrnic24'].render(brief['name'], True, colors['black'])
                 p2b = fonts['zrnic24'].render('Click and Hold to Buy', True, colors['black'])
-                cost = fonts['zrnic24'].render(f"Cost: {brief['cost']}", True, colors['black'])
+                cost = fonts['zrnic24'].render(f"Cost: {brief['cost']:,}", True, colors['black'])
                 desc = word_wrap(brief['desc'], fonts['zrnic20'], colors['black'], ttrect.inflate(-25, 0))
 
                 tt.blit(name, (20, 5))
@@ -204,13 +200,14 @@ class FullMenu():
 
                 self.image.blit(tt, ttrect)
 
-    def update_acq(self, m_pos, m_pressed):
+    def update_acq(self, m_pos, m_pressed, is_click):
         """
         Description: Handle events specific to the acquisitions tab.
         Parameters:
             m_pos [tuple] -> The current position of the mouse
             m_pressed [tuple] -> Contains booleans that represent the mouse
                                  buttons
+            is_click [bool] -> True on the first frame of a mouseclick event
         Returns: None
         """
         # Detect hovering
@@ -237,12 +234,13 @@ class FullMenu():
                 self.selected_sat = -1
 
             if self.selected_sat != -1:
-                if self.acq_button_rect.move(10, 10).collidepoint(m_pos):
-                    new_sat = self.sats[self.selected_sat]
+                if is_click:
+                    if self.acq_button_rect.move(10, 10).collidepoint(m_pos):
+                        new_sat = self.sats[self.selected_sat]
 
-                    game_info['num_sats'] += 1
-                    game_info['cash'] -= new_sat['money_cost']
-                    game_info['sats_owned'].append(new_sat)
+                        game_info['num_sats'] += 1
+                        game_info['cash'] -= new_sat['money_cost']
+                        game_info['sats_owned'].append(new_sat)
 
     def render_acq(self):
         """
@@ -250,6 +248,7 @@ class FullMenu():
         Parameters: None
         Returns: None
         """
+        pyg.draw.rect(self.image, colors['acq_bg'], self.acq_bg_rect)
         pyg.draw.rect(self.image, colors['lightgray'], self.acq_sel_rect)
         pyg.draw.rect(self.image, colors['blue'], self.acq_info_rect)
         pyg.draw.rect(self.image, colors['gray'], self.acq_pic_rect)
@@ -296,8 +295,145 @@ class FullMenu():
             pyg.draw.rect(self.image, colors['pink'], self.acq_button_rect)
 
             # Cost of satellite
-            cash_cost = fonts['zrnic26'].render(f"Purchase: {self.sats[self.selected_sat]['money_cost']}", True, colors['black'])
+            cash_cost = fonts['zrnic26'].render(f"Purchase: {self.sats[self.selected_sat]['money_cost']:,}", True, colors['black'])
             self.image.blit(cash_cost, cash_cost.get_rect(center=self.acq_button_rect.center))
+
+    def update_cyber(self, m_pos, m_pressed, is_click):
+        """
+        Description: Handle events specific to the cyber tab.
+        Parameters:
+            m_pos [tuple] -> The current position of the mouse
+            m_pressed [tuple] -> Contains booleans that represent the mouse
+                                 buttons
+            is_click [bool] -> True on the first frame of a mouseclick event
+        Returns: None
+        """
+        ...
+
+    def render_cyber(self):
+        """
+        Description: Draw the menu for the cyber tab.
+        Parameters: None
+        Returns: None
+        """
+        # Draw bg
+        pyg.draw.rect(self.image, colors['def_cyber_bg'], self.cyber_def_rect)
+        pyg.draw.rect(self.image, colors['off_cyber_bg'], self.cyber_off_rect)
+        # pyg.draw.rect(self.image, colors['babygreen'], self.cyber_def_header)
+        # pyg.draw.rect(self.image, colors['babyblue'], self.cyber_off_header)
+
+        def_header = fonts['zrnic36'].render('DEFENSIVE', True, colors['babygreen'])
+        off_header = fonts['zrnic36'].render('OFFENSIVE', True, colors['babyblue'])
+
+        self.image.blit(def_header, def_header.get_rect(midleft=self.cyber_def_header.midleft))
+        self.image.blit(off_header, off_header.get_rect(midright=self.cyber_off_header.midright))
+
+        pyg.draw.line(self.image, colors['babygreen'], self.cyber_def_header.bottomleft, self.cyber_def_header.bottomright, 5)
+        pyg.draw.line(self.image, colors['babyblue'], self.cyber_off_header.bottomleft, self.cyber_off_header.bottomright, 5)
+
+
+    def update_ops(self, m_pos, m_pressed, is_click):
+        """
+        Description: Handle events specific to the ops tab.
+        Parameters:
+            m_pos [tuple] -> The current position of the mouse
+            m_pressed [tuple] -> Contains booleans that represent the mouse
+                                 buttons
+            is_click [bool] -> True on the first frame of a mouseclick event
+        Returns: None
+        """
+        ...
+
+    def render_ops(self):
+        """
+        Description: Draw the menu for the operations tab.
+        Parameters: None
+        Returns: None
+        """
+        placeholder = fonts['zrnic80'].render('UNDER CONSTRUCTION', True, colors['black'])
+        placeholder_rect = placeholder.get_rect(center=self.rect.center).inflate(40, 40)
+        pyg.draw.rect(self.image, colors['babyblue'], placeholder_rect)
+        self.image.blit(placeholder, placeholder_rect.move(20, 20))
+
+    def update_personnel(self, m_pos, m_pressed, is_click):
+        """
+        Description: Handle events specific to the personnel tab.
+        Parameters:
+            m_pos [tuple] -> The current position of the mouse
+            m_pressed [tuple] -> Contains booleans that represent the mouse
+                                 buttons
+            is_click [bool] -> True on the first frame of a mouseclick event
+        Returns: None
+        """
+        ...
+
+    def render_personnel(self):
+        """
+        Description: Draw the menu for the personnel tab.
+        Parameters: None
+        Returns: None
+        """
+        placeholder = fonts['zrnic80'].render('UNDER CONSTRUCTION', True, colors['black'])
+        placeholder_rect = placeholder.get_rect(center=self.rect.center).inflate(40, 40)
+        pyg.draw.rect(self.image, colors['lightgray'], placeholder_rect)
+        self.image.blit(placeholder, placeholder_rect.move(20, 20))
+
+    def update_events(self, m_pos, m_pressed, is_click):
+        """
+        Description: Handle events specific to the events tab.
+        Parameters:
+            m_pos [tuple] -> The current position of the mouse
+            m_pressed [tuple] -> Contains booleans that represent the mouse
+                                 buttons
+            is_click [bool] -> True on the first frame of a mouseclick event
+        Returns: None
+        """
+        ...
+
+    def render_events(self):
+        """
+        Description: Draw the menu for the events tab.
+        Parameters: None
+        Returns: None
+        """
+        placeholder = fonts['zrnic80'].render('UNDER CONSTRUCTION', True, colors['black'])
+        placeholder_rect = placeholder.get_rect(center=self.rect.center).inflate(40, 40)
+        pyg.draw.rect(self.image, colors['gray'], placeholder_rect)
+        self.image.blit(placeholder, placeholder_rect.move(20, 20))
+
+    def update(self, is_click=False):
+        """
+        Description: Detect mouse clicks and update active tab.
+        Parameters:
+            is_click [bool] -> True if this function is being called because of
+                               a mouse click, false otherwise
+        Returns: None
+        """
+        m_pos = pyg.mouse.get_pos()
+        m_pressed = pyg.mouse.get_pressed()
+
+        # Switch tabs if the mouse clicks on one
+        for rect, name in zip(self.tab_rects, self.tab_names):
+            # If a tab is clicked on, select it
+            # We move the rect because the mouse coords are absolute, but the
+            # rect coords are based on the topleft of the menu
+            if rect.move(10, 10).collidepoint(m_pos) and m_pressed[0]:
+                self.cur_tab = name
+
+        # Handle tab specific updates
+        # Pass mouse info so we don't have to get it more than once a frame
+        if self.cur_tab == 'INTEL':
+            self.update_intel(m_pos, m_pressed, is_click)
+        elif self.cur_tab == 'ACQUISITIONS':
+            self.update_acq(m_pos, m_pressed, is_click)
+        elif self.cur_tab == 'CYBER':
+            self.update_cyber(m_pos, m_pressed, is_click)
+        elif self.cur_tab == 'OPS':
+            self.update_ops(m_pos, m_pressed, is_click)
+        elif self.cur_tab == 'PERSONNEL':
+            self.update_personnel(m_pos, m_pressed, is_click)
+        elif self.cur_tab == 'EVENTS':
+            self.update_events(m_pos, m_pressed, is_click)
 
     def render_tabs(self):
         """
@@ -323,9 +459,13 @@ class FullMenu():
         for i in range(1, len(self.tab_names)):
             pyg.draw.line(self.image, colors['darkgray'], (i*size, 0), (i*size, 50))
 
+        # Draw a line under all the tabs
+        pyg.draw.line(self.image, colors['ddarkgray'], (5, 52), (1254, 52), 5)
+
     def render(self):
         """
-        Description: Render this menu on the screen.
+        Description: Render this menu on the screen, then render any tab
+                     specific elements to the screen.
         Parameters: None
         Returns: None
         """
@@ -333,11 +473,20 @@ class FullMenu():
         self.image = self.image_base.copy()
 
         # Render everything to self.image
-        self.render_tabs()
         if self.cur_tab == 'INTEL':
             self.render_intel()
         elif self.cur_tab == 'ACQUISITIONS':
             self.render_acq()
+        elif self.cur_tab == 'CYBER':
+            self.render_cyber()
+        elif self.cur_tab == 'OPS':
+            self.render_ops()
+        elif self.cur_tab == 'PERSONNEL':
+            self.render_personnel()
+        elif self.cur_tab == 'EVENTS':
+            self.render_events()
+
+        self.render_tabs()
 
         # Blit to the screen
         self.window.blit(self.image, self.rect)
