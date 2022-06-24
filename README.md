@@ -38,20 +38,22 @@ A wargame simulation made by the i5 cyber element, with inspiration from the i5 
 - `pyg.Surface.fill()` is hardware accelerated. Maybe switch?
 - Compile with [PyInstaller](https://pyinstaller.org/en/stable/)
 
-### Todo list (in no particular order):
-- __HUD:__ Move node menus to the HUD class
+### Todo list:
 - __HUD:__ Restructure HUD rendering to limit number of functions
-- __EMenu:__ Add scroll limits to main screen
-- __EMenu:__ Move earth to the right when opening earth vignette
-- __EMenu:__ Single click to open EMenu items
-- __EMenu:__ Shooting stars/main menu decorations
-- __FullMenu:__ Move logic from render_XXX() to update_XXX()
-- __FullMenu:__ Finish the rest of the menus (Cyber, Ops, Events, Personnel)
-- __FullMenu:__ Make selected tab bigger than the other tabs
+- __FullMenu:__ Finish the rest of the menus (Cyber, Ops, Personnel)
 - __Acquisitions:__ Add levels once purchased
-- __Intel:__ Literally redo everything
-- Figure out what to do with the satellite nodes system
+- __Acquisitions:__ Add stats panel underneath the picture
+- Add pause menu
 - Only render objects that are on screen
+- __EMenu:__ Move earth to the right when opening earth vignette
+- __EMenu:__ Shooting stars/main menu decorations
+- __FullMenu:__ Make selected tab bigger than the other tabs
+- __EMenu:__ Add scroll limits to main screen?
+- __FullMenu:__ Add ability for newline characters in acquisitions tab descriptions
+- Figure out what to do with the satellite nodes system
+    - __HUD:__ Move node menus to the HUD class
+- Add interactivity e.g. minigames and/or/like an actual game game
+- __Intel:__ Literally redo everything
 - Round/square-off corners of rects
 - Easter eggs/Achievements
 
@@ -59,6 +61,7 @@ A wargame simulation made by the i5 cyber element, with inspiration from the i5 
 - __Acquisitions:__ Double click buys it three+ times on a trackpad
 - __FullMenu:__ On bigger screens, the border is offset
 - Pressing a key will sometimes stop the next mouse click from being registered
+- Sometimes, the earth will render on the topleft of the screen
 
 ## Credits:
 - https://freesound.org/people/EminYILDIRIM/sounds/536108/
