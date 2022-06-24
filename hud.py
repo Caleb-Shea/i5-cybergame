@@ -44,6 +44,35 @@ class HUD():
         text = fonts['zrnic42'].render("STATS:", True, colors['starwhite'])
         self.e_menu.blit(text, (30, 20))
 
+        # --- Pause menu init ---
+        self.p_menu = pyg.Surface(self.window.get_rect().size).convert_alpha()
+        self.p_menu.fill(colors['pause_menu'])
+
+        # Create buttons
+        self.p_resume = pyg.Surface((500, 80))
+        self.p_resume.fill(colors['intel_bg'])
+        self.p_resume_rect = self.p_resume.get_rect(center=(self.WIDTH//2, 2/5*self.HEIGHT))
+        text = fonts['zrnic26'].render('RESUME', True, colors['lightgray'])
+        self.p_resume.blit(text, text.get_rect(center=(250, 40)))
+
+        self.p_options = pyg.Surface((242, 80))
+        self.p_options.fill(colors['off_cyber_bg'])
+        self.p_options_rect = self.p_options.get_rect(topleft=self.p_resume_rect.move(0, 15).bottomleft)
+        text = fonts['zrnic26'].render('OPTIONS', True, colors['black'])
+        self.p_options.blit(text, text.get_rect(center=(121, 40)))
+
+        self.p_info = pyg.Surface((242, 80))
+        self.p_info.fill(colors['def_cyber_bg'])
+        self.p_info_rect = self.p_info.get_rect(topright=self.p_resume_rect.move(0, 15).bottomright)
+        text = fonts['zrnic26'].render('GAME INFO', True, colors['black'])
+        self.p_info.blit(text, text.get_rect(center=(121, 40)))
+
+        self.p_exit = pyg.Surface((500, 80))
+        self.p_exit.fill(colors['acq_bg'])
+        self.p_exit_rect = self.p_exit.get_rect(topleft=self.p_options_rect.move(0, 15).bottomleft)
+        text = fonts['zrnic26'].render('EXIT', True, colors['lightgray'])
+        self.p_exit.blit(text, text.get_rect(center=(250, 40)))
+
         # --- Vignette init ---
         # Left side
         vig1_points = [(0, 0), (0, self.HEIGHT), (self.WIDTH//3, self.HEIGHT),
@@ -169,8 +198,7 @@ class HUD():
 
     def render_earth_menu(self):
         """
-        Description: Render a button that, when clicked, shows the player's
-                     stats.
+        Description: Render the earth's menu.
         Parameters: None
         Returns: None
         """
@@ -212,3 +240,15 @@ class HUD():
         rect = img.get_rect()
         rect.topleft = (50, 220)
         self.window.blit(img, rect)
+
+    def render_pause_menu(self):
+        """
+        Description: Render the pause menu.
+        Parameters: None
+        Returns: None
+        """
+        self.window.blit(self.p_menu, (0, 0))
+        self.window.blit(self.p_resume, self.p_resume_rect)
+        self.window.blit(self.p_options, self.p_options_rect)
+        self.window.blit(self.p_info, self.p_info_rect)
+        self.window.blit(self.p_exit, self.p_exit_rect)
