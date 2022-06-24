@@ -1,4 +1,5 @@
 import pygame as pyg
+import random
 
 import fullmenu_data
 from helper_func import *
@@ -25,7 +26,7 @@ class FullMenu():
 
         # self.image is the surface where everything happens, and self.image_base
         # is the surface that we keep plain for easy redrawing
-        self.image = self.image_base
+        self.image = self.image_base.copy()
 
         # Create tabs
         self.tab_names = ['ACQUISITIONS', 'OPS', 'INTEL', 'CYBER', 'PERSONNEL',
@@ -42,7 +43,7 @@ class FullMenu():
 
         # Tab specific initalization
         # --- Intel tab ---
-        self.intel_bg_rect = pyg.rect.Rect(5, 52, 1250, 645)
+        self.intel_bg_rect = pyg.rect.Rect(5, 50, 1250, 645)
         self.hovered_brief_id = -1
         self.selected_brief_id = -1
         self.brief_buy_timer = 0
@@ -58,36 +59,50 @@ class FullMenu():
             self.brief_rects.append(rect)
 
         # --- Acquisitions tab ---
-        self.sats = fullmenu_data.sats
+        self.sats = fullmenu_data.acq_data
         self.hovered_sat = -1
         self.selected_sat = -1
         self.sat_rects = []
         for i in range(9):
             size = (250, 55)
-            rect = pyg.rect.Rect((100, 100 + (500/9)*i), size)
+            rect = pyg.rect.Rect((80, 100 + (500/9)*i), size)
             self.sat_rects.append(rect)
 
-        # Static rects that only need to be made once
-        self.acq_bg_rect = pyg.rect.Rect(5, 52, 1250, 645)
-        self.acq_sel_rect = pyg.rect.Rect(100, 100, 250, 500)
+        self.acq_bg_rect = pyg.rect.Rect(5, 50, 1250, 645)
+        self.acq_sel_rect = pyg.rect.Rect(80, 100, 250, 500)
         self.acq_info_rect = pyg.rect.Rect(380, 100, 800, 500)
-        self.acq_pic_rect = pyg.rect.Rect(400, 150, 400, 400)
+        self.acq_pic_rect = pyg.rect.Rect(400, 120, 400, 350)
         self.acq_descbg_rect = pyg.rect.Rect(830, 110, 310, 480)
         self.acq_desc_rect = pyg.rect.Rect(840, 180, 290, 400)
         self.acq_button_rect = pyg.rect.Rect(840, 510, 290, 70)
 
         # --- Cyber tab ---
-        self.cyber_def_rect = pyg.rect.Rect(5, 52, 630, 645)
-        self.cyber_off_rect = pyg.rect.Rect(630, 52, 625, 645)
-        self.cyber_def_header = pyg.rect.Rect(30, 60, 300, 70)
-        self.cyber_off_header = pyg.rect.Rect(930, 60, 300, 70)
+        self.cyber_def_level = 1
+        self.cyber_off_level = 1
+
+        self.cyber_attr = {'MDef': 0, 'System Monitoring': 0, 'Updates': 0,
+                           'Funding': 0, 'White Hat': 0}
+        self.cyber_graph_inc = 50
+
+        self.cyber_def_level_cost = 1000
+        self.cyber_def_rep_increase = 10
+
+        # Static rects
+        self.cyber_def_rect = pyg.rect.Rect(5, 50, 630, 645)
+        self.cyber_def_header = pyg.rect.Rect(30, 60, 300, 60)
+        self.cyber_def_up_rect = pyg.rect.Rect(215, 590, 300, 60)
+        self.cyber_graph_rect = pyg.rect.Rect(25, 150, 580, 400)
+        self.cyber_off_rect = pyg.rect.Rect(630, 50, 625, 645)
+        self.cyber_off_header = pyg.rect.Rect(930, 60, 300, 60)
+        self.cyber_threats_rect = pyg.rect.Rect(20, 150, 580, 480)
 
         # --- Ops tab ---
 
         # --- Personnel tab ---
 
         # --- Events tab ---
-
+        self.events_bg_rect = pyg.rect.Rect(5, 50, 1250, 645)
+        self.events_reel_rect = pyg.rect.Rect(80, 80, 1100, 520)
 
     def update_intel(self, m_pos, m_pressed, is_click):
         """
@@ -223,24 +238,33 @@ class FullMenu():
         # Detect clicks
         if m_pressed[0]:
             for i, rect in enumerate(self.sat_rects):
+                # If we clicked on a rect
                 if rect.move(10, 10).collidepoint(m_pos):
                     self.selected_sat = i
                     break
+                # Don't deselect the satellite if we clicked on the description
+                # or the picture
                 if self.acq_descbg_rect.move(10, 10).collidepoint(m_pos):
                     break
                 if self.acq_pic_rect.move(10, 10).collidepoint(m_pos):
                     break
-            else:
+            else: # If we didn't break from the loop, deselect
                 self.selected_sat = -1
 
+            # If there is a selected satellite
             if self.selected_sat != -1:
+                # And we clicked on it
                 if is_click:
                     if self.acq_button_rect.move(10, 10).collidepoint(m_pos):
                         new_sat = self.sats[self.selected_sat]
+                        # If we have the money, purchase the satellite
+                        if game_info['cash'] >= new_sat['money_cost']:
+                            game_info['num_sats'] += 1
+                            game_info['Acq GPS Level'] += 1
+                            game_info['cash'] -= new_sat['money_cost']
+                            game_info['sats_owned'].append(new_sat)
 
-                        game_info['num_sats'] += 1
-                        game_info['cash'] -= new_sat['money_cost']
-                        game_info['sats_owned'].append(new_sat)
+                            new_sat['money_cost'] = int(round(new_sat['money_cost'] * 1.15, -1))
 
     def render_acq(self):
         """
@@ -256,28 +280,30 @@ class FullMenu():
 
         for i, rect in enumerate(self.sat_rects): # Rects
             # Draw the button itself
-            if i == self.hovered_sat or i == self.selected_sat:
-                pyg.draw.rect(self.image, colors['yellow'], rect)
+            if i==self.hovered_sat or i==self.selected_sat:
+                pyg.draw.rect(self.image, colors['yellow'], rect) # Selected color
             else:
-                pyg.draw.rect(self.image, colors['orange'], rect)
+                pyg.draw.rect(self.image, colors['orange'], rect) # Unselected color
 
-            # Draw the name of the satellite on it's own button
-            list_text = fonts['zrnic26'].render(self.sats[i]['name'], True, colors['black'])
+            # Draw the name of the satellite, and it's level, on it's own button
+            sat_name = self.sats[i]['name']
+            sat_title = sat_name + " Lvl:" + str(game_info[f'Acq {sat_name} Level'])
+            list_text = fonts['zrnic26'].render(sat_title, True, colors['black'])
             self.image.blit(list_text, list_text.get_rect(center=rect.center))
 
         for i in range(9): # Divider lines
             pyg.draw.line(self.image, colors['lime'],
-                         (100, 100 + (500/9)*i), (349, 100 + (500/9)*i), 3)
+                         (80, 100 + (500/9)*i), (329, 100 + (500/9)*i), 3)
         # Border
-        pyg.draw.rect(self.image, colors['lime'], (100, 100, 250, 500), 3)
+        pyg.draw.rect(self.image, colors['lime'], (80, 100, 250, 500), 3)
 
-
-        if self.selected_sat != -1: # If there is a selected satellite
+        # If there is a selected satellite
+        if self.selected_sat != -1:
             cur_sat = self.sats[self.selected_sat] # Get the info for the current satellite
             # Satellite image
-            # Placeholder text
+            # -- Placeholder text
             pic_text = fonts['zrnic80'].render('SAT PICTURE', True, colors['black'])
-            self.image.blit(pic_text, (420, 300))
+            self.image.blit(pic_text, pic_text.get_rect(center=self.acq_pic_rect.center))
 
             # Name
             name_text = fonts['zrnic42'].render(cur_sat['name'], True, colors['black'])
@@ -308,7 +334,54 @@ class FullMenu():
             is_click [bool] -> True on the first frame of a mouseclick event
         Returns: None
         """
-        ...
+        # Tooltip rendering
+        if self.cyber_def_up_rect.move(10, 10).collidepoint(m_pos):
+            # Show a tooltip for upgrading defence
+            self.cyber_inflate_def_up = True
+
+        elif not self.cyber_def_up_rect.inflate(80, 60).move(10, -20).collidepoint(m_pos):
+            # Hide the tooltip when the mouse leaves the inflated rect
+            self.cyber_inflate_def_up = False
+
+        def upgrade_random_attr():
+            """
+            We call this chunk of code twice, so this function exists to cut
+            down on repeated code.
+            """
+            # Upgrade defensive capabilities
+            self.cyber_def_level += 1
+            game_info['Cyber Def Level'] += 1
+            game_info['reputation'] += self.cyber_def_rep_increase
+            game_info['cash'] -= self.cyber_def_level_cost
+
+            # Choose a random attribute to level up
+            attr = random.choice(list(self.cyber_attr.keys()))
+            # attr = list(self.cyber_attr.keys())[1]
+            self.cyber_attr[attr] += 1
+
+            # Increase the cost of future upgrades
+            self.cyber_def_level_cost = int(round(self.cyber_def_level_cost * 1.2, -1))
+
+        # If the user clicks
+        if m_pressed[0] and is_click:
+            # And clicks on the defensive upgrade button
+            if self.cyber_inflate_def_up:
+                if self.cyber_def_up_rect.inflate(80, 60).move(10, -20).collidepoint(m_pos):
+                    # And has the available resources
+                    if game_info['cash'] >= self.cyber_def_level_cost:
+                        upgrade_random_attr()
+            else:
+                if self.cyber_def_up_rect.collidepoint(m_pos):
+                    # And has the available resources
+                    if game_info['cash'] >= self.cyber_def_level_cost:
+                        upgrade_random_attr()
+
+        # Adjust graph increment if necessary
+        max_attr = max(list(self.cyber_attr.values()))
+        if max_attr > 6:
+            # 6 levels is the point when the default increment exceeds the
+            # graph area. Use // so the max bar height is variable
+            self.cyber_graph_inc = 300 // max_attr
 
     def render_cyber(self):
         """
@@ -319,18 +392,70 @@ class FullMenu():
         # Draw bg
         pyg.draw.rect(self.image, colors['def_cyber_bg'], self.cyber_def_rect)
         pyg.draw.rect(self.image, colors['off_cyber_bg'], self.cyber_off_rect)
-        # pyg.draw.rect(self.image, colors['babygreen'], self.cyber_def_header)
-        # pyg.draw.rect(self.image, colors['babyblue'], self.cyber_off_header)
 
+        # Draw header text
         def_header = fonts['zrnic36'].render('DEFENSIVE', True, colors['babygreen'])
         off_header = fonts['zrnic36'].render('OFFENSIVE', True, colors['babyblue'])
-
         self.image.blit(def_header, def_header.get_rect(midleft=self.cyber_def_header.midleft))
         self.image.blit(off_header, off_header.get_rect(midright=self.cyber_off_header.midright))
 
+        # Draw capability levels
+        def_level = fonts['zrnic26'].render(f'Level: {self.cyber_def_level}', True, colors['babygreen'])
+        off_level = fonts['zrnic26'].render(f'Level: {self.cyber_off_level}', True, colors['babyblue'])
+        self.image.blit(def_level, def_level.get_rect(midright=self.cyber_def_header.midright))
+        self.image.blit(off_level, off_level.get_rect(midleft=self.cyber_off_header.midleft))
+
+        # Draw header underline
         pyg.draw.line(self.image, colors['babygreen'], self.cyber_def_header.bottomleft, self.cyber_def_header.bottomright, 5)
         pyg.draw.line(self.image, colors['babyblue'], self.cyber_off_header.bottomleft, self.cyber_off_header.bottomright, 5)
 
+        # --- Defensive ---
+        # pyg.draw.rect(self.image, colors['babygreen'], self.cyber_threats_rect)
+
+        # Draw bar graph background
+        pyg.draw.rect(self.image, colors['lightgray'], self.cyber_graph_rect)
+
+        # Draw unit lines for the graph
+        for y in range(self.cyber_graph_rect.height//self.cyber_graph_inc + 1):
+            pyg.draw.line(self.image, colors['babygreen'],
+                         (self.cyber_graph_rect.left, self.cyber_graph_rect.bottom-y*self.cyber_graph_inc),
+                         (self.cyber_graph_rect.right, self.cyber_graph_rect.bottom-y*self.cyber_graph_inc))
+
+        # Draw the bars
+        for i, attr in enumerate(list(self.cyber_attr.keys())):
+            # Get coords of each bar
+            x = 120 + 100*i
+            y = self.cyber_graph_inc * self.cyber_attr[attr]
+
+            # Create and draw a rect that holds the bounds of each bar
+            rect = pyg.rect.Rect(x-20, self.cyber_graph_rect.bottom-y, 50, y)
+            pyg.draw.rect(self.image, colors['ddarkgray'], rect)
+
+            # Render the bar title that goes on top of each bar
+            text = fonts['zrnic16'].render(str(attr), True, colors['black'])
+            text = pyg.transform.rotate(text, 45)
+            self.image.blit(text, text.get_rect(bottomleft=(rect.x, self.cyber_graph_rect.bottom-y)))
+
+        # Draw the graph border
+        pyg.draw.rect(self.image, colors['white'], self.cyber_graph_rect.inflate(14, 14), 7)
+
+        # Draw upgrade button
+        if self.cyber_inflate_def_up:
+            # Draw an enlarged button that has more information
+            pyg.draw.rect(self.image, colors['red'], self.cyber_def_up_rect.inflate(80, 60).move(0, -30))
+            # Draw text
+            def_up_text = fonts['zrnic24'].render('Upgrade Defense', True, colors['black'])
+            self.image.blit(def_up_text, def_up_text.get_rect(midtop=self.cyber_def_up_rect.move(0, -55).midtop))
+
+            # Purchase info
+            info_text = fonts['zrnic20'].render(f'${self.cyber_def_level_cost:,} -> {self.cyber_def_rep_increase:,} Rep', True, colors['black'])
+            self.image.blit(info_text, info_text.get_rect(center=self.cyber_def_up_rect.center))
+        else:
+            # Draw a normal upgrade button
+            pyg.draw.rect(self.image, colors['red'], self.cyber_def_up_rect)
+            # Upgrade text
+            def_up_text = fonts['zrnic26'].render('Upgrade Defense', True, colors['black'])
+            self.image.blit(def_up_text, def_up_text.get_rect(center=self.cyber_def_up_rect.center))
 
     def update_ops(self, m_pos, m_pressed, is_click):
         """
@@ -396,11 +521,32 @@ class FullMenu():
         Parameters: None
         Returns: None
         """
-        placeholder = fonts['zrnic80'].render('UNDER CONSTRUCTION', True, colors['black'])
-        placeholder_rect = placeholder.get_rect(center=self.rect.center).inflate(40, 40)
-        pyg.draw.rect(self.image, colors['gray'], placeholder_rect)
-        self.image.blit(placeholder, placeholder_rect.move(20, 20))
+        # Draw background
+        pyg.draw.rect(self.image, colors['events_bg'], self.events_bg_rect)
 
+        # Draw newsreel bg
+        pyg.draw.rect(self.image, colors['events_reel'], self.events_reel_rect)
+
+        # Draw each seen reel to the screen
+        for i, reel in enumerate(game_info['Reels Seen']):
+            rect = pyg.rect.Rect(self.events_reel_rect.inflate(-40, -40).x,
+                                 self.events_reel_rect.inflate(-40, -40).y + 50*i,
+                                 self.events_reel_rect.inflate(-40, -40).width, 50)
+
+            # If it's a special reel, color the bg differently
+            if reel['has_menu_highlight'] == 'True':
+                pyg.draw.rect(self.image, colors['sand'], rect)
+                pyg.draw.line(self.image, colors['black'], rect.topleft, rect.topright, 2)
+
+            # Draw a line separating each reel
+            pyg.draw.line(self.image, colors['black'], rect.bottomleft, rect.bottomright, 2)
+
+            # Render and draw the text that goes in each rect
+            text = fonts['zrnic30'].render(reel['event'], True, colors['black'])
+            self.image.blit(text, text.get_rect(center=rect.center))
+
+        # Draw border around the newsreel
+        pyg.draw.rect(self.image, colors['red_sand'], self.events_reel_rect, 20)
     def update(self, is_click=False):
         """
         Description: Detect mouse clicks and update active tab.
@@ -460,7 +606,7 @@ class FullMenu():
             pyg.draw.line(self.image, colors['darkgray'], (i*size, 0), (i*size, 50))
 
         # Draw a line under all the tabs
-        pyg.draw.line(self.image, colors['ddarkgray'], (5, 52), (1254, 52), 5)
+        # pyg.draw.line(self.image, colors['ddarkgray'], (5, 52), (1254, 52), 5)
 
     def render(self):
         """
@@ -472,6 +618,7 @@ class FullMenu():
         # Clear the image of anything tab specific so objects don't persist
         self.image = self.image_base.copy()
 
+        self.render_tabs()
         # Render everything to self.image
         if self.cur_tab == 'INTEL':
             self.render_intel()
@@ -485,8 +632,6 @@ class FullMenu():
             self.render_personnel()
         elif self.cur_tab == 'EVENTS':
             self.render_events()
-
-        self.render_tabs()
 
         # Blit to the screen
         self.window.blit(self.image, self.rect)
