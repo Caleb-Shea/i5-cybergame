@@ -36,7 +36,7 @@ class Node(pyg.sprite.Sprite):
         pyg.draw.circle(self.image_src, colors[self.data['color']], (self.rect.centerx, self.rect.centery), self.radius)
 
         # Make a separate image for rendering so we don't lose fidelity
-        self.draw_image = self.image_src.copy()
+        self.image = self.image_src.copy()
         self.draw_rect = self.image_src.get_rect()
 
         # Create the menu that pops up once clicked
@@ -109,6 +109,17 @@ class Node(pyg.sprite.Sprite):
             self.rect.center = (self.parent.rect.centerx + self.dist * math.cos(self.theta),
                                 self.parent.rect.centery + self.dist * math.sin(self.theta))
 
+        # Get the spritesheet for earth
+        if self.data['name'] == 'EARTH':
+            self.ss = images['earth_ss']
+            self.ss_cur = 0
+            self.ss_rects = []
+            for j in range(4):
+                for i in range(12):
+                    x = i * 100
+                    y = j * 100
+                    self.ss_rects.append(pyg.rect.Rect(x, y, 100, 100))
+
     def get_children(self):
         """
         Description: Create a list of this node's children.
@@ -170,19 +181,24 @@ class Node(pyg.sprite.Sprite):
                                 self.parent.rect.centery + self.dist * math.sin(self.theta))
 
         # If the mouse is hovering over this node, make it bigger
-        m_pos = pyg.mouse.get_pos()
-        if math.dist(m_pos, self.rect.center) <= self.radius or self.is_selected:
-            self.is_hovered = True
-            self.draw_rect = self.rect.inflate(math.ceil(self.radius * .2), math.ceil(self.radius * .2))
-            self.draw_image = pyg.transform.smoothscale(self.image_src, self.draw_rect.size)
-
+        if self.is_hovered or self.is_selected:
+            if self.data['name'] != 'EARTH':
+                self.draw_rect = self.rect.inflate(math.ceil(self.radius * .2), math.ceil(self.radius * .2))
+                self.image = pyg.transform.smoothscale(self.image_src, self.draw_rect.size)
+            else:
+                self.draw_rect = self.rect
         else:
-            self.is_hovered = False
             self.draw_rect = self.rect.copy()
-            self.draw_image = pyg.transform.smoothscale(self.image_src, self.draw_rect.size)
+            self.image = pyg.transform.smoothscale(self.image_src, self.draw_rect.size)
 
         # Center the name
         self.name_rect.center = self.rect.center
+
+        # Update the image for earth
+        if self.data['name'] == 'EARTH':
+            self.image.fill(colors['clear'])
+            self.image.blit(self.ss, (30, 30), self.ss_rects[math.floor(self.ss_cur)%len(self.ss_rects)])
+            self.ss_cur += 1/3
 
     def render_menu(self):
         """
@@ -199,5 +215,5 @@ class Node(pyg.sprite.Sprite):
         Returns: None
         """
         self.draw_connections()
-        self.window.blit(self.draw_image, self.draw_rect)
+        self.window.blit(self.image, self.draw_rect)
         self.window.blit(self.name_img, self.name_rect)
