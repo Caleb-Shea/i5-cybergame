@@ -1,6 +1,13 @@
-ID,event,is_on_menu,menu_text,pre_req
-0,The world is ending tomorrow!,False,None,4
-1,Scientists discover a way to turn carrots into steak.,False,None,None
-2,NASA researchers create a new satellite mirror system.,True,New upgrades unlocked in Acquitions menu,1
-3,The Queen of England dies.,False,None,None
-4,Russian forces are moving into Ukraine!,True,Recommended actions: Increase offensive cyber capabilities,3
+ID,event,pre_req,has_menu_highlight,menu_text
+0,The world is ending tomorrow!,4,False,None
+1,Scientists discover a way to turn almonds into real steak.,None,False,None
+2,NASA researchers create a new satellite mirror system.,1,True,New upgrades unlocked in Acquitions menu
+3,The Queen of England dies.,None,False,None
+4,Russian forces are moving into Ukraine!,3,True,Recommended actions: Increase offensive cyber capabilities
+5,US thwarts cyber attack from Chinese terrorist group,Cyber Def 10,False,None
+6,GPS satellites now cover 75% of the Earth's surface,Acq GPS 3,False,False
+7,Vandy declares war on Sijan!,None,True,Budget might fluctuate drastically
+8,First casualty of Vandy/Sijan war is BrigGen Mogadon,7,False,None
+9,Vandenberg air forces have launched an airstrike on Sijan Tower,7,False,None
+10,Sijanistan retaliates with an airstrike of their own. No deaths.,9,False,None
+11,'Tzo gap' gains a whole new meaning as trenches are being dug,8,False,None
