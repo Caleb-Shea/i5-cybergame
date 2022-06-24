@@ -54,10 +54,11 @@ class Ticker():
             for row in reader:
                 self.events.append(row)
 
-    def new_event(self):
+    def new_event(self, date):
         """
         Description: Choose a new available event and store it.
-        Parameters: None
+        Parameters:
+            date [datetime.date] -> Today's date
         Returns: None
         """
         available_events = []
@@ -92,6 +93,9 @@ class Ticker():
             self.cur_event = random.choice(available_events)
             self.used_events.append(self.cur_event)
             self.unused_events.remove(self.cur_event)
+
+            # Get a timestamp for which day the user first saw the event
+            self.cur_event['Date Seen'] = date
 
             # Add the event to game_info
             game_info['Reels Seen'].append(self.cur_event)

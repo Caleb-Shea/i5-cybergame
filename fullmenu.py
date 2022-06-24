@@ -33,13 +33,12 @@ class FullMenu():
                           'EVENTS']
         self.tab_rects = []
         for i in range(len(self.tab_names)):
-            x_size = self.rect.width//len(self.tab_names)
+            x_size = self.rect.width//len(self.tab_names) - 20
             rect = pyg.rect.Rect(i * x_size, 0, x_size, 50)
             self.tab_rects.append(rect)
 
-        self.cur_tab = self.tab_names[1]
-
-        self.channel = pyg.mixer.find_channel()
+        # We must have a selected tab for the first frame of rendering
+        self.cur_tab = self.tab_names[0]
 
         # Tab specific initalization
         # --- Intel tab ---
@@ -97,8 +96,10 @@ class FullMenu():
         self.cyber_threats_rect = pyg.rect.Rect(20, 150, 580, 480)
 
         # --- Ops tab ---
+        self.ops_bg_rect = pyg.rect.Rect(5, 50, 1250, 645)
 
         # --- Personnel tab ---
+        self.ppl_bg_rect = pyg.rect.Rect(5, 50, 1250, 645)
 
         # --- Events tab ---
         self.events_bg_rect = pyg.rect.Rect(5, 50, 1250, 645)
@@ -528,10 +529,15 @@ class FullMenu():
         pyg.draw.rect(self.image, colors['events_reel'], self.events_reel_rect)
 
         # Draw each seen reel to the screen
-        for i, reel in enumerate(game_info['Reels Seen']):
+        for i, reel in enumerate(reversed(game_info['Reels Seen'])):
             rect = pyg.rect.Rect(self.events_reel_rect.inflate(-40, -40).x,
                                  self.events_reel_rect.inflate(-40, -40).y + 50*i,
                                  self.events_reel_rect.inflate(-40, -40).width, 50)
+
+            # If we are about to draw a reel that goes past the alloted space,
+            # don't render it. Also break for efficiency
+            if rect.bottom > self.events_reel_rect.bottom:
+                break
 
             # If it's a special reel, color the bg differently
             if reel['has_menu_highlight'] == 'True':
@@ -545,8 +551,13 @@ class FullMenu():
             text = fonts['zrnic30'].render(reel['event'], True, colors['black'])
             self.image.blit(text, text.get_rect(center=rect.center))
 
+            # Render a timestamp in the bottom right corner
+            timestamp = fonts['zrnic16'].render(reel['Date Seen'].strftime("%d %B"), True, colors['gray'])
+            self.image.blit(timestamp, timestamp.get_rect(bottomright=rect.move(-5, -2).bottomright))
+
         # Draw border around the newsreel
         pyg.draw.rect(self.image, colors['red_sand'], self.events_reel_rect, 20)
+
     def update(self, is_click=False):
         """
         Description: Detect mouse clicks and update active tab.
@@ -558,13 +569,35 @@ class FullMenu():
         m_pos = pyg.mouse.get_pos()
         m_pressed = pyg.mouse.get_pressed()
 
+        # Tracker to keep track if we have moved on to a rect that is right of
+        # the currently selected tab
+        right_of_sel = False
+
         # Switch tabs if the mouse clicks on one
         for rect, name in zip(self.tab_rects, self.tab_names):
             # If a tab is clicked on, select it
             # We move the rect because the mouse coords are absolute, but the
             # rect coords are based on the topleft of the menu
-            if rect.move(10, 10).collidepoint(m_pos) and m_pressed[0]:
-                self.cur_tab = name
+            if self.cur_tab == name:
+                # The selected tab has a larger rect that is moved slightly to
+                # the right, so the mouse collisions must reflect that
+                cur_rect = rect.inflate(20*len(self.tab_rects), 0).move(10*len(self.tab_rects), 0).move(10, 10)
+
+                # If the user clicked on the current tab, don't do anything
+                if cur_rect.collidepoint(m_pos) and m_pressed[0]:
+                    break
+
+                # Update the position tracker
+                right_of_sel = True
+            else:
+                # Move all collision rects to the right once we've passed the
+                # larger selected rect
+                if right_of_sel:
+                    rect = rect.move(20*len(self.tab_rects), 0)
+                # If the user clicks on a different tab, switch to it
+                if rect.move(10, 10).collidepoint(m_pos) and m_pressed[0]:
+                    self.cur_tab = name
+                    break
 
         # Handle tab specific updates
         # Pass mouse info so we don't have to get it more than once a frame
@@ -587,26 +620,33 @@ class FullMenu():
         Parameters: None
         Returns: None
         """
+        # Tracker to keep track if we have moved on to a rect that is right of
+        # the currently selected tab
+        right_of_sel = False
         for rect, name in zip(self.tab_rects, self.tab_names):
             # Draw the tabs, highlighting the selected one
             if self.cur_tab == name:
+                # We want the selected tab to be bigger than the others
+                rect = rect.inflate(20*len(self.tab_rects), 0).move(10*len(self.tab_rects), 0)
+
+                # Update position tracker
+                right_of_sel = True
+
                 pyg.draw.rect(self.image, colors['darkgray'], rect)
             else:
+                # Due to the larger selected tab, we must move all the tabs that
+                # are right of the tab over
+                if right_of_sel:
+                    rect = rect.move(20*len(self.tab_rects), 0)
+
                 pyg.draw.rect(self.image, colors['gray'], rect)
 
             # Draw the text on top of the tab
             text = fonts['zrnic30'].render(name, True, colors['starwhite'])
-            text_rect = text.get_rect(center=rect.center)
-            self.image.blit(text, text_rect)
+            self.image.blit(text, text.get_rect(center=rect.center))
 
-        # Draw lines separating each tab
-        size = self.rect.width//len(self.tab_names)
-        pyg.draw.line(self.image, colors['black'], (0, 50), (self.rect.right, 50))
-        for i in range(1, len(self.tab_names)):
-            pyg.draw.line(self.image, colors['darkgray'], (i*size, 0), (i*size, 50))
-
-        # Draw a line under all the tabs
-        # pyg.draw.line(self.image, colors['ddarkgray'], (5, 52), (1254, 52), 5)
+            # Draw divider lines
+            pyg.draw.line(self.image, colors['darkgray'], (rect.right-1, 0), (rect.right-1, 50))
 
     def render(self):
         """

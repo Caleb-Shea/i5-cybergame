@@ -36,7 +36,7 @@ A wargame simulation made by the i5 cyber element, with inspiration from the i5 
 ### General:
 - `pygame.sprite.LayeredUpdates()` is a thing. At some point this might be helpful
 - `pyg.Surface.fill()` is hardware accelerated. Maybe switch?
-- Compile with [PyInstaller](https://pyinstaller.org/en/stable/)
+- Compile with [PyInstaller](https://pyinstaller.org/en/stable/) or [Nuitka](https://nuitka.net/doc/user-manual.html)
 
 ### Todo list:
 - __HUD:__ Restructure HUD rendering to limit number of functions
@@ -47,7 +47,6 @@ A wargame simulation made by the i5 cyber element, with inspiration from the i5 
 - Only render objects that are on screen
 - __EMenu:__ Move earth to the right when opening earth vignette
 - __EMenu:__ Shooting stars/main menu decorations
-- __FullMenu:__ Make selected tab bigger than the other tabs
 - __EMenu:__ Add scroll limits to main screen?
 - __FullMenu:__ Add ability for newline characters in acquisitions tab descriptions
 - Figure out what to do with the satellite nodes system

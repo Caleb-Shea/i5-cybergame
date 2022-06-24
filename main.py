@@ -285,7 +285,7 @@ def main():
                     terminate()
 
                 elif event.key == pyg.K_SPACE:
-                    game_info['cash'] += 9000000000000000000000000
+                    game_info['cash'] += 90000000000000000000
                     game_info['reputation'] += 20
 
                 elif event.key == pyg.K_e:
@@ -357,7 +357,7 @@ def main():
                 date = date + dt.timedelta(days=1)
 
             elif event.type == new_news_event:
-                hud.ticker.new_event()
+                hud.ticker.new_event(date)
 
         # Handle held down keys and mouse movement
         event_keys = pyg.key.get_pressed()
@@ -372,14 +372,6 @@ def main():
                 star[0] += m_rel[0] * .06 * star[4]
                 star[1] += m_rel[1] * .06 * star[4]
 
-        # Check if the earth is the selected node
-        for node in all_nodes[cur_center]:
-            if node.is_selected and node.data['name'] == 'EARTH':
-                earth_is_selected = True
-                break
-        else:
-            earth_is_selected = False
-
         # Determine whether or not the full menu should be showing
         if cur_center in ['ACQUISITIONS', 'OPS', 'PERSONNEL', 'INTEL', 'CYBER', 'EVENTS']:
             full_menu_active = True
@@ -390,7 +382,7 @@ def main():
         if not done_scrolling:
             # If the earth is selected, scroll to the right of the screen to
             # make room for the vignette menu
-            if earth_is_selected:
+            if earth.is_selected:
                 target = (3/5*WIDTH, HEIGHT/2)
             else:
                 target = (WIDTH/2, HEIGHT/2)
@@ -407,7 +399,7 @@ def main():
             node.render()
 
         # If the earth is selected, render it's menu
-        if earth_is_selected:
+        if earth.is_selected:
             hud.render_vignette('left')
             hud.render_earth_menu()
 
