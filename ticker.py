@@ -2,7 +2,7 @@ import pygame as pyg
 import random
 import csv
 
-from game_info import game_info, ticker_events
+from game_info import game_info
 from helper_func import *
 from assets import *
 
@@ -69,8 +69,22 @@ class Ticker():
                 continue
 
             # The pre-req for any given event is the ID of the pre-req
-            if event['pre_req'] in [e['ID'] for e in self.used_events]:
+            elif event['pre_req'] in [e['ID'] for e in self.used_events]:
                 available_events.append(event)
+                continue
+
+            # Some events have level requirements
+            for tag in ['Cyber Def', 'Cyber Off', 'Acq GPS']:
+                if event['pre_req'].startswith(tag):
+                    lvl_req = int(event['pre_req'].split()[-1])
+
+                    # Check tag specific level requirement
+                    if tag == 'Cyber Def':
+                        if game_info['Cyber Def Level'] >= lvl_req:
+                            available_events.append(event)
+                    elif tag == 'Acq GPS':
+                        if game_info['Acq GPS Level'] >= lvl_req:
+                            available_events.append(event)
 
         if len(available_events) > 0:
             # Get the new event, remove it from the list of available events and
@@ -78,6 +92,9 @@ class Ticker():
             self.cur_event = random.choice(available_events)
             self.used_events.append(self.cur_event)
             self.unused_events.remove(self.cur_event)
+
+            # Add the event to game_info
+            game_info['Reels Seen'].append(self.cur_event)
 
             # Store the event
             self.event_text = fonts['zrnic20'].render(self.cur_event['event'], True, colors['black'])
