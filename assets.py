@@ -9,7 +9,7 @@ for easy access.
 import pygame as pyg
 from pygame.font import Font
 from pygame.mixer import Sound
-import os
+from os import path
 
 from helper_func import get_path
 
@@ -18,30 +18,35 @@ pyg.font.init()
 pyg.mixer.pre_init(44100, -16, 2, 512)
 pyg.mixer.init()
 
-fonts = {'zrnic14': Font(get_path(os.path.join('assets', 'fonts', 'zrnic.ttf')), 14),
-         'zrnic16': Font(get_path(os.path.join('assets', 'fonts', 'zrnic.ttf')), 16),
-         'zrnic20': Font(get_path(os.path.join('assets', 'fonts', 'zrnic.ttf')), 20),
-         'zrnic24': Font(get_path(os.path.join('assets', 'fonts', 'zrnic.ttf')), 24),
-         'zrnic26': Font(get_path(os.path.join('assets', 'fonts', 'zrnic.ttf')), 26),
-         'zrnic30': Font(get_path(os.path.join('assets', 'fonts', 'zrnic.ttf')), 30),
-         'zrnic32': Font(get_path(os.path.join('assets', 'fonts', 'zrnic.ttf')), 32),
-         'zrnic36': Font(get_path(os.path.join('assets', 'fonts', 'zrnic.ttf')), 36),
-         'zrnic42': Font(get_path(os.path.join('assets', 'fonts', 'zrnic.ttf')), 42),
-         'zrnic48': Font(get_path(os.path.join('assets', 'fonts', 'zrnic.ttf')), 48),
-         'zrnic80': Font(get_path(os.path.join('assets', 'fonts', 'zrnic.ttf')), 80)}
+fonts = {'zrnic14': Font(get_path(path.join('assets', 'fonts', 'zrnic.ttf')), 14),
+         'zrnic16': Font(get_path(path.join('assets', 'fonts', 'zrnic.ttf')), 16),
+         'zrnic20': Font(get_path(path.join('assets', 'fonts', 'zrnic.ttf')), 20),
+         'zrnic24': Font(get_path(path.join('assets', 'fonts', 'zrnic.ttf')), 24),
+         'zrnic26': Font(get_path(path.join('assets', 'fonts', 'zrnic.ttf')), 26),
+         'zrnic30': Font(get_path(path.join('assets', 'fonts', 'zrnic.ttf')), 30),
+         'zrnic32': Font(get_path(path.join('assets', 'fonts', 'zrnic.ttf')), 32),
+         'zrnic36': Font(get_path(path.join('assets', 'fonts', 'zrnic.ttf')), 36),
+         'zrnic42': Font(get_path(path.join('assets', 'fonts', 'zrnic.ttf')), 42),
+         'zrnic48': Font(get_path(path.join('assets', 'fonts', 'zrnic.ttf')), 48),
+         'zrnic80': Font(get_path(path.join('assets', 'fonts', 'zrnic.ttf')), 80)}
 
-sounds = {'up_click': Sound(get_path(os.path.join('assets', 'sounds', 'up_click.wav'))),
-          'down_click': Sound(get_path(os.path.join('assets', 'sounds', 'down_click.wav')))}
+sounds = {'up_click': Sound(get_path(path.join('assets', 'sounds', 'up_click.wav'))),
+          'down_click': Sound(get_path(path.join('assets', 'sounds', 'down_click.wav')))}
 
 sounds['down_click'].set_volume(.75)
 
+images = {'earth_ss': pyg.image.load(path.join('assets', 'images', 'earth.png'))}
+
 colors = {'clear': pyg.Color(  0,   0,   0,   0),
           'hud_bg': pyg.Color(  5,   0,  30, 230),
+          'pause_menu': pyg.Color(  0,  10,  50, 200),
           'ticker_bg': pyg.Color(220, 220, 220),
           'vignette': pyg.Color( 50,  50, 100, 150),
           'vignette_b': pyg.Color(  0,   0,   0, 200),
           'intel_bg': pyg.Color(  5,   0,  30, 150),
           'acq_bg': pyg.Color(220,  60,  30,  30),
+          'events_bg': pyg.Color(220,  10,  200,  30),
+          'events_reel': pyg.Color(220, 220, 200),
           'def_cyber_bg': pyg.Color(200, 240, 200,  50),
           'off_cyber_bg': pyg.Color(140, 210, 240,  50),
           'white': pyg.Color(255, 255, 255),
@@ -55,6 +60,8 @@ colors = {'clear': pyg.Color(  0,   0,   0,   0),
           'red': pyg.Color(255,   0,   0),
           'orange': pyg.Color(220, 100,   5),
           'yellow': pyg.Color(255, 255,   0),
+          'sand': pyg.Color(120, 120,  80),
+          'red_sand': pyg.Color(200, 120, 100),
           'babygreen': pyg.Color(200, 240, 200),
           'green': pyg.Color(  0, 255,   0),
           'lime': pyg.Color( 80, 255,   0),

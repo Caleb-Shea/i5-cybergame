@@ -7,12 +7,13 @@ get_path(path)
 play_sound(sound, channel=None)
 word_wrap(text, font, color, rect)
 num_to_roman(num)
-debug_render(value)
 """
 
 
 import pygame as pyg
 import os
+
+from game_info import game_info
 
 
 def terminate():
@@ -114,21 +115,5 @@ def num_to_roman(num):
         result += roman * factor
     return result
 
-def debug_render(value):
-    """
-    Description: Render a given value on the screen for debugging purposes.
-    Parameters:
-        value [almost anything] -> The thing to render
-    Returns: None
-    """
-    window = pyg.display.get_surface()
-
-    font_name = pyg.font.get_default_font()
-    font = pyg.font.SysFont(font_name, 24)
-    image = font.render(f"{value}", True, (255, 255, 255))
-    rect = image.get_rect(topleft=(0, 0))
-    bg = pyg.Surface(rect.inflate(20, 20).size)
-    bg.fill((0, 0, 0))
-
-    window.blit(bg, rect.move(-10, -10))
-    window.blit(image, rect)
+def calc_time_from(date1, date2):
+    pass

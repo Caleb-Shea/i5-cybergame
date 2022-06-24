@@ -31,18 +31,15 @@ def_cyber = []
 
 
 #ACQUISITIONS
-names = ['GSSAP', 'GPS', 'ISS', 'AEHF']
-money_costs = [1000*i for i in range(20)]
-personnel_required = [1, 2, 3, 4, 5]
-descs = ['Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.', 'Make things go BOOM.']
-
-sats = []
-for i in range(9):
-    sat = {'name': random.choice(names),
-           'money_cost': random.choice(money_costs),
-           'personnel_required': random.choice(personnel_required),
-           'desc': random.choice(descs)}
-    sats.append(sat)
+acq_data = [{'name': 'GPS', 'money_cost': 10000, 'personnel_required': 15, 'desc': 'A satellite made for navigation and location based purposes.'},
+            {'name': 'ABD', 'money_cost': 8000, 'personnel_required': 10, 'desc': 'Something cool idk.'},
+            {'name': 'SPI', 'money_cost': 12000, 'personnel_required': 12, 'desc': 'Stolen Russian spy tech. May have a bug or two.'},
+            {'name': 'MDef', 'money_cost': 5000, 'personnel_required': 10, 'desc': 'Missile defence system.'},
+            {'name': 'ABCDE', 'money_cost': 13000, 'personnel_required': 1, 'desc': 'A Big Case of Death Engines *shrug*'},
+            {'name': 'IROOI', 'money_cost': 80000, 'personnel_required': 800, 'desc': 'I ran out of ideas lmao'},
+            {'name': 'ICBM', 'money_cost': 7500, 'personnel_required': 3, 'desc': 'Big bomb go BOOM'},
+            {'name': 'B.O.L.L.S.', 'money_cost': 20000, 'personnel_required': 20, 'desc': 'Big Offensive Lock-on Laser System'},
+            {'name': 'Nukes', 'money_cost': 50000, 'personnel_required': 40, 'desc': 'hehehe.. get nuked'}]
 
 # OPS
 
