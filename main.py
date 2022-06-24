@@ -96,24 +96,10 @@ def init_nodes():
                  'PERSONNEL': [],
                  'INTEL': [],
                  'CYBER': [],
-                 'ACQUISITIONS': []}
+                 'ACQUISITIONS': [],
+                 'EVENTS': []}
 
     return node_dict
-
-def zoom_to(node, cur_center):
-    """
-    Description: Replace the menu nodes with the node map of the passed node.
-    Parameters:
-        node [Node()] -> The node to zoom in on
-        cur_center [str] -> The name of the node currently in the center
-    Returns: str -> The name of the node in the center
-    """
-
-    if node.data['name'] != cur_center:
-        if node.data['is_zoomable']:
-            return node.data['name']
-
-    return cur_center
 
 def render_bg(bg_stars):
     """
@@ -143,11 +129,12 @@ def render_bg(bg_stars):
             else:
                 pyg.draw.circle(window, colors['starwhite'], (x, y), size, draw_bottom_right=True)
 
-def scroll_to_earth(earth, all_nodes, bg_stars):
+def scroll_the_earth(earth, target, all_nodes, bg_stars):
     """
     Description: Scroll the screen until the earth is at the center.
     Parameters:
         earth [Node] -> A reference to earth
+        target [tuple] -> Coords of the target point
         all_nodes [dict] -> A dictionary that contains all the nodes
         bg_stars [list] -> A list that contains the bg stars information.
     Returns:
@@ -155,9 +142,8 @@ def scroll_to_earth(earth, all_nodes, bg_stars):
     """
 
     # Calculate offsets
-    WIDTH, HEIGHT = pyg.display.get_window_size()
-    x_offset = earth.rect.centerx - WIDTH/2
-    y_offset = earth.rect.centery - HEIGHT/2
+    x_offset = earth.rect.centerx - target[0]
+    y_offset = earth.rect.centery - target[1]
 
     # Due to rounding errors in rect movement, we need to add 20 to the offset
     x_offset += math.copysign(20, x_offset)
@@ -222,6 +208,8 @@ def main():
 
     # Trackers
     done_scrolling = True
+    full_menu_active = False
+    is_paused = False
 
     # Timekeeping
     clock = pyg.time.Clock()
@@ -240,11 +228,52 @@ def main():
     soundtrack_channel = pyg.mixer.find_channel()
 
     while True:
-        # Determine whether or not the full menu is showing
-        if cur_center in ['ACQUISITIONS', 'OPS', 'PERSONNEL', 'INTEL', 'CYBER']:
-            full_menu_active = True
-        else:
-            full_menu_active = False
+        # Pause menu
+        if is_paused:
+            for event in pyg.event.get():
+                if event.type == pyg.QUIT:
+                    terminate()
+
+                elif event.type == pyg.KEYDOWN:
+                    if event.key == pyg.K_BACKQUOTE:
+                        terminate()
+
+                elif event.type == pyg.KEYUP:
+                    if event.key == pyg.K_ESCAPE:
+                        is_paused = False
+
+                elif event.type == pyg.MOUSEBUTTONUP:
+                    # HUD buttons
+                    if hud.p_resume_rect.collidepoint(event.pos):
+                        is_paused = False
+
+                    elif hud.p_options_rect.collidepoint(event.pos):
+                        ...
+
+                    elif hud.p_info_rect.collidepoint(event.pos):
+                        ...
+
+                    elif hud.p_exit_rect.collidepoint(event.pos):
+                        terminate()
+
+            # Rendering
+            window.fill(colors['space'])
+            render_bg(bg_stars)
+
+            # Render essential hud elements
+            hud.render_time(date)
+            hud.render_reputation()
+            hud.render_cash()
+            hud.ticker.render()
+
+            hud.render_pause_menu()
+
+            # Update the screen
+            pyg.display.flip()
+            clock.tick(FPS)
+
+            # Don't run the rest of the while loop
+            continue
 
         # Handle all events
         for event in pyg.event.get():
@@ -254,8 +283,9 @@ def main():
             elif event.type == pyg.KEYDOWN:
                 if event.key == pyg.K_BACKQUOTE:
                     terminate()
+
                 elif event.key == pyg.K_SPACE:
-                    game_info['cash'] += 20000
+                    game_info['cash'] += 9000000000000000000000000
                     game_info['reputation'] += 20
 
                 elif event.key == pyg.K_e:
@@ -264,35 +294,64 @@ def main():
 
             elif event.type == pyg.KEYUP:
                 if event.key == pyg.K_ESCAPE:
-                    if cur_center != 'EARTH':
+                    if cur_center == 'EARTH':
+                        is_paused = True
+                    else:
                         cur_center = 'EARTH'
+
+                        # Deselect all nodes
+                        for node in all_nodes[cur_center]:
+                            node.is_hovered = False
 
             elif event.type == pyg.MOUSEBUTTONDOWN:
                 ui_channel.queue(sounds['down_click'])
-                full_menu.update(True)
+                full_menu.update(True) # We pass True because we are calling update() due to a mouse event
 
             elif event.type == pyg.MOUSEMOTION:
-                ...
+                # If the mouse is over a node, detect that
+                for node in all_nodes[cur_center]:
+                    if math.dist(event.pos, node.rect.center) <= node.radius:
+                        node.is_hovered = True
+                    else:
+                        node.is_hovered = False
 
             elif event.type == pyg.MOUSEBUTTONUP:
                 ui_channel.queue(sounds['up_click'])
-                full_menu.update(True)
+                full_menu.update(True) # We pass True because we are calling update() due to a mouse event
 
+                # If we click on a node
+                for node in all_nodes[cur_center]:
+                    if node.is_hovered and m_rel == (0, 0):
+                        node.is_selected = True # Select it
+
+                        # Check if the node we clicked on has a menu
+                        if node.data['name'] != cur_center:
+                            if node.data['is_zoomable']:
+                                cur_center = node.data['name']
+
+                        # Set the appropriate tab
+                        full_menu.cur_tab = cur_center
+
+                        # If we clicked on earth, scroll the earth
+                        if node.data['name'] == 'EARTH':
+                            done_scrolling = False
+                    else:
+                        node.is_selected = False
+                        # If we drag while holding the earth, don't come back
+                        if node.data['name'] == 'EARTH':
+                            done_scrolling = True
+
+                # Back arrow
                 if hud.arrow_rect.collidepoint(event.pos):
                     cur_center = 'EARTH'
+                    # Deselect all nodes
+                    for node in all_nodes[cur_center]:
+                        node.is_hovered = False
 
-                for node in all_nodes[cur_center]:
-                    if node.is_selected and m_rel == (0, 0):
-                        if math.dist(event.pos, node.rect.center) <= node.radius:
-                            cur_center = zoom_to(node, cur_center)
-                            full_menu.cur_tab = cur_center # Select the tab that we clicked on
-                        else:
-                            node.is_selected = False
-
-                    # If a node is clicked on, select it
-                    if node.is_hovered:
-                        if math.dist(event.pos, node.rect.center) <= node.radius:
-                            node.is_selected = True
+                # Ticker
+                if hud.ticker.rect.collidepoint(event.pos):
+                    cur_center = 'EVENTS' # Clumsy workaround for old node system
+                    full_menu.cur_tab = 'EVENTS'
 
             elif event.type == new_day:
                 date = date + dt.timedelta(days=1)
@@ -302,46 +361,41 @@ def main():
 
         # Handle held down keys and mouse movement
         event_keys = pyg.key.get_pressed()
-        mouse_keys = pyg.mouse.get_pressed()
+        m_pressed = pyg.mouse.get_pressed()
         m_rel = pyg.mouse.get_rel()
-        # Move all the nodes/stars if a key is pressed
-        if event_keys[pyg.K_LEFT] or event_keys[pyg.K_a]:
-            for node in all_nodes[cur_center]:
-                node.rect.x += 15
-            if not full_menu_active: # Find a better way to do this
-                for star in bg_stars:
-                    star[0] += 1.5 * star[4] # Move the nodes less for a parallax effect
-        if event_keys[pyg.K_RIGHT] or event_keys[pyg.K_d]:
-            for node in all_nodes[cur_center]:
-                node.rect.x -= 15
-            if not full_menu_active:
-                for star in bg_stars:
-                    star[0] -= 1.5 * star[4]
-        if event_keys[pyg.K_UP] or event_keys[pyg.K_w]:
-            for node in all_nodes[cur_center]:
-                node.rect.y += 15
-            if not full_menu_active:
-                for star in bg_stars:
-                    star[1] += 1.5 * star[4]
-        if event_keys[pyg.K_DOWN] or event_keys[pyg.K_s]:
-            for node in all_nodes[cur_center]:
-                node.rect.y -= 15
-            if not full_menu_active:
-                for star in bg_stars:
-                    star[1] -= 1.5 * star[4]
         # Move all the nodes/stars if the mouse is dragged
-        if mouse_keys[0]:
-            for node in all_nodes[cur_center]:
+        if m_pressed[0] and not full_menu_active:
+            for node in all_nodes[cur_center]: # Move nodes
                 node.rect.x += m_rel[0]
                 node.rect.y += m_rel[1]
-            if not full_menu_active:
-                for star in bg_stars:
-                    star[0] += m_rel[0] * .06 * star[4]
-                    star[1] += m_rel[1] * .06 * star[4]
+            for star in bg_stars: # Move stars, but less
+                star[0] += m_rel[0] * .06 * star[4]
+                star[1] += m_rel[1] * .06 * star[4]
 
-        # If the 'e' key is down, scroll to the earth
+        # Check if the earth is the selected node
+        for node in all_nodes[cur_center]:
+            if node.is_selected and node.data['name'] == 'EARTH':
+                earth_is_selected = True
+                break
+        else:
+            earth_is_selected = False
+
+        # Determine whether or not the full menu should be showing
+        if cur_center in ['ACQUISITIONS', 'OPS', 'PERSONNEL', 'INTEL', 'CYBER', 'EVENTS']:
+            full_menu_active = True
+        else:
+            full_menu_active = False
+
+        # Keep scrolling until the earth is centered
         if not done_scrolling:
-            done_scrolling = scroll_to_earth(earth, all_nodes, bg_stars)
+            # If the earth is selected, scroll to the right of the screen to
+            # make room for the vignette menu
+            if earth_is_selected:
+                target = (3/5*WIDTH, HEIGHT/2)
+            else:
+                target = (WIDTH/2, HEIGHT/2)
+
+            done_scrolling = scroll_the_earth(earth, target, all_nodes, bg_stars)
 
         # Render the background
         window.fill(colors['space'])
@@ -353,21 +407,18 @@ def main():
             node.render()
 
         # If the earth is selected, render it's menu
-        for node in all_nodes[cur_center]:
-            if node.is_selected and node.data['name'] == 'EARTH':
-                hud.render_vignette('left')
-                hud.render_earth_menu()
-                break
+        if earth_is_selected:
+            hud.render_vignette('left')
+            hud.render_earth_menu()
 
-        # If a node is selected, render it's menu
+        # If a node is hovered over, render it's menu
         for node in all_nodes[cur_center]:
-            if node.is_selected:
+            if node.is_hovered:
                 node.render_menu()
                 break
 
-        # If the current center node doesn't use nodes (e.x. OPS or CYBER),
-        # use a full screen menu
-        if len(all_nodes[cur_center]) == 0:
+        # If the full menu is active, update/render it
+        if full_menu_active:
             full_menu.update()
             full_menu.render()
 
