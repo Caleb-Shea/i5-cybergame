@@ -38,15 +38,27 @@ A wargame simulation made by the i5 cyber element, with inspiration from the i5 
 - `pyg.Surface.fill()` is hardware accelerated. Maybe switch?
 - Compile with [PyInstaller](https://pyinstaller.org/en/stable/) or [Nuitka](https://nuitka.net/doc/user-manual.html)
 
+### Materials needed:
+|Content|Approx Quantity|
+|-----|-----|
+|Newsreels|Like 100+ ideally|
+|Operation names|~30*|
+|Intel brief names|~20*|
+|Satellite names w/ description, stats, and pictures|5-6|
+|Missile names w/ description, stats, and pictures|3-4|
+|Pictures w/ animation for Earth|1-2|
+|Pictures w/ animation for satellites/missiles|9|
+|UI/UX|1-3 styles|
+|A soundtrack|3+ ~3-4 min tracks|
+
+*Could be pseudorandomly generated
+
 ### Todo list:
 - __HUD:__ Restructure HUD rendering to limit number of functions
-- __FullMenu:__ Finish the rest of the menus (Cyber, Ops, Personnel)
-- __Acquisitions:__ Add levels once purchased
 - __Acquisitions:__ Add stats panel underneath the picture
-- Add pause menu
+- Change Acquitions/Cyber tab to use surfaces
 - Only render objects that are on screen
-- __EMenu:__ Move earth to the right when opening earth vignette
-- __EMenu:__ Shooting stars/main menu decorations
+- __EMenu:__ Move earth to the left when closing earth vignette
 - __EMenu:__ Add scroll limits to main screen?
 - __FullMenu:__ Add ability for newline characters in acquisitions tab descriptions
 - Figure out what to do with the satellite nodes system
@@ -64,3 +76,5 @@ A wargame simulation made by the i5 cyber element, with inspiration from the i5 
 
 ## Credits:
 - https://freesound.org/people/EminYILDIRIM/sounds/536108/
+- https://freemusicarchive.org/music/nul-tiel-records/electronica/empty-head-1/
+- https://loading.io
