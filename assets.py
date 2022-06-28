@@ -32,11 +32,17 @@ fonts = {'zrnic14': Font(get_path(path.join('assets', 'fonts', 'zrnic.ttf')), 14
          'zrnic80': Font(get_path(path.join('assets', 'fonts', 'zrnic.ttf')), 80)}
 
 sounds = {'up_click': Sound(get_path(path.join('assets', 'sounds', 'up_click.wav'))),
-          'down_click': Sound(get_path(path.join('assets', 'sounds', 'down_click.wav')))}
+          'down_click': Sound(get_path(path.join('assets', 'sounds', 'down_click.wav'))),
+          'soundtrack1': Sound(get_path(path.join('assets', 'sounds', 'soundtrack', 'Empty Head.mp3')))}
 
 sounds['down_click'].set_volume(.75)
+sounds['soundtrack1'].set_volume(.25)
 
-images = {'earth_ss': pyg.image.load(path.join('assets', 'images', 'earth.png'))}
+images = {'earth_ss': pyg.image.load(path.join('assets', 'images', 'earth.png')),
+          'world_map': pyg.image.load(path.join('assets', 'images', 'world_map.png')),
+          'world_map_NA': pyg.image.load(path.join('assets', 'images', 'world_map_NA.png')),
+          'world_map_big': pyg.image.load(path.join('assets', 'images', 'world_map_big.png')),
+          'map_marker': pyg.image.load(path.join('assets', 'images', 'map_marker.png'))}
 
 colors = {'clear': pyg.Color(  0,   0,   0,   0),
           'hud_bg': pyg.Color(  5,   0,  30, 230),
@@ -46,6 +52,12 @@ colors = {'clear': pyg.Color(  0,   0,   0,   0),
           'vignette_b': pyg.Color(  0,   0,   0, 200),
           'intel_bg': pyg.Color(  5,   0,  30, 150),
           'acq_bg': pyg.Color(220,  60,  30,  30),
+          'ppl_bg': pyg.Color(40, 200, 230,  30),
+          'ppl_legend_Intel': pyg.Color(255,   0,   0),
+          'ppl_legend_Ops': pyg.Color(  0,   0, 255),
+          'ppl_legend_Cyber': pyg.Color(255, 255,   0),
+          'ppl_legend_Acquisitions': pyg.Color(  0, 255,   0),
+          'ppl_legend_Unassigned': pyg.Color(128,   0, 255),
           'events_bg': pyg.Color(220,  10,  200,  30),
           'events_reel': pyg.Color(220, 220, 200),
           'def_cyber_bg': pyg.Color(200, 240, 200,  50),

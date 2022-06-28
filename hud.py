@@ -196,6 +196,29 @@ class HUD():
         pyg.draw.rect(self.window, colors['rose'], dbg_rect, width=1)
         self.window.blit(img, rect)
 
+    def render_personnel(self):
+        """
+        Description: Render current amount of total personnel the player has,
+        right above the current amount of cash.
+        Parameters: None
+        Returns: None
+        """
+        # Create an object specifially for the text that will be rendered
+        img = fonts['zrnic24'].render(f"Total Personnel: {game_info['num_personnel']:,}", True, colors['starwhite'])
+        rect = img.get_rect()
+        rect.bottomright = (self.WIDTH - 7, self.HEIGHT - 126)
+
+        # Create a bg that is slightly bigger than the text
+        date_bg = pyg.Surface(rect.inflate(15, 10).size).convert_alpha()
+        date_bg.fill(colors['hud_bg'])
+        dbg_rect = date_bg.get_rect()
+        dbg_rect.bottomright = (self.WIDTH, self.HEIGHT - 120)
+
+        # Render the bg, a border, and the text
+        self.window.blit(date_bg, dbg_rect)
+        pyg.draw.rect(self.window, colors['rose'], dbg_rect, width=1)
+        self.window.blit(img, rect)
+
     def render_earth_menu(self):
         """
         Description: Render the earth's menu.
