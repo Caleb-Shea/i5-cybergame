@@ -31,39 +31,19 @@ def init_nodes():
     """
     # Create all nodes from node_data.py
     earth_nodes = pyg.sprite.Group()
-    for data in main_data:
-        node = Node(data)
-        earth_nodes.add(node)
-
+    [earth_nodes.add(Node(data)) for data in main_data]
     gssap_nodes = pyg.sprite.Group()
-    for data in gssap_data:
-        node = Node(data)
-        gssap_nodes.add(node)
-
+    [gssap_nodes.add(Node(data)) for data in gssap_data]
     iss_nodes = pyg.sprite.Group()
-    for data in iss_data:
-        node = Node(data)
-        iss_nodes.add(node)
-
+    [iss_nodes.add(Node(data)) for data in iss_data]
     milstar_nodes = pyg.sprite.Group()
-    for data in milstar_data:
-        node = Node(data)
-        milstar_nodes.add(node)
-
+    [milstar_nodes.add(Node(data)) for data in milstar_data]
     aehf_nodes = pyg.sprite.Group()
-    for data in aehf_data:
-        node = Node(data)
-        aehf_nodes.add(node)
-
+    [aehf_nodes.add(Node(data)) for data in aehf_data]
     gps_nodes = pyg.sprite.Group()
-    for data in gps_data:
-        node = Node(data)
-        gps_nodes.add(node)
-
+    [gps_nodes.add(Node(data)) for data in gps_data]
     sbirs_nodes = pyg.sprite.Group()
-    for data in sbirs_data:
-        node = Node(data)
-        sbirs_nodes.add(node)
+    [sbirs_nodes.add(Node(data)) for data in sbirs_data]
 
     # Once all nodes have been made, init phase two
     for node in earth_nodes:
@@ -81,53 +61,77 @@ def init_nodes():
     for node in sbirs_nodes:
         node.phase_two_init(sbirs_nodes)
 
-
-    node_dict = {'EARTH': earth_nodes,
-                 'GSSAP': gssap_nodes,
-                 'ISS': iss_nodes,
-                 'MILSTAR': milstar_nodes,
-                 'AEHF': aehf_nodes,
-                 'GPS': gps_nodes,
+    node_dict = {'EARTH': earth_nodes, 'GSSAP': gssap_nodes, 'ISS': iss_nodes,
+                 'MILSTAR': milstar_nodes, 'AEHF': aehf_nodes, 'GPS': gps_nodes,
                  'SBIRS': sbirs_nodes,
 
                  # These are included because although they use a different menu
                  # system, we still need to clear the screen
-                 'OPS': [],
-                 'PERSONNEL': [],
-                 'INTEL': [],
-                 'CYBER': [],
-                 'ACQUISITIONS': [],
-                 'EVENTS': []}
+                 'OPS': [], 'PERSONNEL': [], 'INTEL': [], 'CYBER': [],
+                 'ACQUISITIONS': [], 'EVENTS': []}
 
     return node_dict
 
-def render_bg(bg_stars):
+def render_bg(bg_stars, bg_sprites):
     """
     Description: Render a faux starscape.
     Parameters:
-        bg_stars [list] -> A list containing coordinates and size data
-                                 for each star
+        bg_stars [list] -> A list containing data for each star
+        bg_sprites [list] -> A list containing data for each moving object
     Returns: None
     """
     window = pyg.display.get_surface()
-    WIDTH, HEIGHT = window.get_rect().size
+    WIDTH, HEIGHT = pyg.display.get_window_size()
 
     for star in bg_stars:
-        # Unpack the list
-        x = star[0]
-        y = star[1]
-        size = star[2]
-        corner = star[3]
-
-        if 0 < x < WIDTH and 0 < y < HEIGHT:
-            if corner == 1:
-                pyg.draw.circle(window, colors['starwhite'], (x, y), size, draw_top_left=True)
-            elif corner == 2:
-                pyg.draw.circle(window, colors['starwhite'], (x, y), size, draw_top_right=True)
-            elif corner == 3:
-                pyg.draw.circle(window, colors['starwhite'], (x, y), size, draw_bottom_left=True)
+        # Only render stars that are on screen
+        if 0 < star['pos'][0] < WIDTH and 0 < star['pos'][1] < HEIGHT:
+            # Draw each star using just one corner so it looks more realistic
+            if star['corner'] == 1:
+                pyg.draw.circle(window, colors['starwhite'], star['pos'], star['size'], draw_top_left=True)
+            elif star['corner'] == 2:
+                pyg.draw.circle(window, colors['starwhite'], star['pos'], star['size'], draw_top_right=True)
+            elif star['corner'] == 3:
+                pyg.draw.circle(window, colors['starwhite'], star['pos'], star['size'], draw_bottom_left=True)
             else:
-                pyg.draw.circle(window, colors['starwhite'], (x, y), size, draw_bottom_right=True)
+                pyg.draw.circle(window, colors['starwhite'], star['pos'], star['size'], draw_bottom_right=True)
+
+    for sprite in bg_sprites:
+        if sprite['type'] == 'shooting_star':
+            # Draw multiple circles to mimic a tail
+            # Use lifetime so it fades away naturally
+            for i in range(sprite['lifetime']*2):
+                pos = sprite['pos'] - 0.05*i*sprite['vel']
+                pyg.draw.circle(window, colors['starwhite'], pos, sprite['size'])
+
+def new_shooting_star():
+    """
+    Description: Create a new shooting star somewhere near the viewing area.
+    Parameters: None
+    Returns:
+        [dict] -> A dict holding the pos and vel of a new shooting star.
+    """
+    # Get the dimensions of the screen
+    WIDTH, HEIGHT = pyg.display.get_window_size()
+    # Find a position
+    x = random.randint(-WIDTH, WIDTH*2)
+    y = random.randint(-HEIGHT, HEIGHT*2)
+
+    # Moves some farther away and brings some closer
+    dist = random.random() + 0.6
+    # Size, based on the distance
+    size = 1.5*dist + random.random()
+
+    # Create a random velocity vector
+    vel = pyg.math.Vector2()
+    vel.x = random.randint(10, 15) * random.choice([-1, 1]) * size
+    vel.y = random.randint(10, 15) * random.choice([-1, 1]) * size
+
+    # Give each star it's own lifetime
+    lifetime = random.randint(15, 25)
+
+    return {'type': 'shooting_star', 'pos': [x, y], 'vel': vel,
+            'size': size, 'dist': dist, 'lifetime': lifetime}
 
 def scroll_the_earth(earth, target, all_nodes, bg_stars):
     """
@@ -158,13 +162,14 @@ def scroll_the_earth(earth, target, all_nodes, bg_stars):
     y_move = y_sig * 100
 
     # Move everything
+    # We use 20 due to rounding errors somewhere. IDK tbh
     if abs(x_offset) > 20 or abs(y_offset) > 20:
         for node in all_nodes['EARTH']:
             node.rect.move_ip(x_move, y_move)
 
         for star in bg_stars:
-            star[0] += x_move * .06 * star[4]
-            star[1] += y_move * .06 * star[4]
+            star['pos'][0] += x_move * .06*star['dist']
+            star['pos'][1] += y_move * .06*star['dist']
 
         return False
     else:
@@ -204,12 +209,16 @@ def main():
         # Which corner of the circle to render (creats a more interesting shape)
         corner = random.randint(1, 4)
 
-        bg_stars.append([x, y, size, corner, dist])
+        bg_stars.append({'pos': [x, y], 'dist': dist, 'size': size, 'corner': corner})
+
+    # This is for everything that is part of the background but isn't a star
+    bg_sprites = []
 
     # Trackers
     done_scrolling = True
     full_menu_active = False
     is_paused = False
+    got_payday = False
 
     # Timekeeping
     clock = pyg.time.Clock()
@@ -219,9 +228,13 @@ def main():
 
     # Custom events
     new_day = pyg.USEREVENT + 1
-    pyg.time.set_timer(new_day, 5000)
+    pyg.time.set_timer(new_day, 5000) # 5 sec
     new_news_event = pyg.USEREVENT + 2
-    pyg.time.set_timer(new_news_event, 2000)
+    pyg.time.set_timer(new_news_event, 2000) # 2 sec
+    new_soundtrack = pyg.USEREVENT + 3
+    pyg.time.set_timer(new_soundtrack, 300000) # 5 min
+    add_shooting_star = pyg.USEREVENT + 4
+    pyg.time.set_timer(add_shooting_star, 5000) # 5 sec
 
     # Sounds
     ui_channel = pyg.mixer.find_channel()
@@ -258,7 +271,7 @@ def main():
 
             # Rendering
             window.fill(colors['space'])
-            render_bg(bg_stars)
+            render_bg(bg_stars, bg_sprites)
 
             # Render essential hud elements
             hud.render_time(date)
@@ -287,6 +300,12 @@ def main():
                 elif event.key == pyg.K_SPACE:
                     game_info['cash'] += 90000000000000000000
                     game_info['reputation'] += 20
+                    game_info['num_personnel'] += 200
+                    game_info['Staff Assignments']['Unassigned'] += 100
+                    game_info['Staff Assignments']['Cyber'] += 50
+                    game_info['Staff Assignments']['Intel'] += 20
+                    game_info['Staff Assignments']['Ops'] += 10
+                    game_info['Staff Assignments']['Acquisitions'] += 30
 
                 elif event.key == pyg.K_e:
                     if cur_center == 'EARTH':
@@ -353,11 +372,19 @@ def main():
                     cur_center = 'EVENTS' # Clumsy workaround for old node system
                     full_menu.cur_tab = 'EVENTS'
 
+            # Custom event handling
             elif event.type == new_day:
                 date = date + dt.timedelta(days=1)
 
             elif event.type == new_news_event:
                 hud.ticker.new_event(date)
+
+            elif event.type == new_soundtrack:
+                # soundtrack_channel.queue(sounds[f'soundtrack{random.randint(1, 1)}'])
+                soundtrack_channel.queue(sounds['soundtrack1'])
+
+            elif event.type == add_shooting_star:
+                bg_sprites.append(new_shooting_star())
 
         # Handle held down keys and mouse movement
         event_keys = pyg.key.get_pressed()
@@ -368,9 +395,9 @@ def main():
             for node in all_nodes[cur_center]: # Move nodes
                 node.rect.x += m_rel[0]
                 node.rect.y += m_rel[1]
-            for star in bg_stars: # Move stars, but less
-                star[0] += m_rel[0] * .06 * star[4]
-                star[1] += m_rel[1] * .06 * star[4]
+            for obj in bg_stars + bg_sprites: # Move bg objets, but less
+                obj['pos'][0] += m_rel[0] * .06*obj['dist']
+                obj['pos'][1] += m_rel[1] * .06*obj['dist']
 
         # Determine whether or not the full menu should be showing
         if cur_center in ['ACQUISITIONS', 'OPS', 'PERSONNEL', 'INTEL', 'CYBER', 'EVENTS']:
@@ -389,9 +416,29 @@ def main():
 
             done_scrolling = scroll_the_earth(earth, target, all_nodes, bg_stars)
 
+        # Update the shooting stars
+        for sprite in bg_sprites:
+            if sprite['type'] == 'shooting_star':
+                if sprite['lifetime'] == 0:
+                    bg_sprites.remove(sprite)
+
+                sprite['pos'][0] += sprite['vel'][0]
+                sprite['pos'][1] += sprite['vel'][1]
+
+                sprite['lifetime'] -= 1
+
+        # Payday is the first of every month
+        if date.day == 1 and not got_payday:
+            game_info['budget'] = 10000 * game_info['reputation']
+            game_info['cash'] += game_info['budget']
+            got_payday = True
+        # Reset tracker
+        elif date.day == 2:
+            got_payday = False
+
         # Render the background
         window.fill(colors['space'])
-        render_bg(bg_stars)
+        render_bg(bg_stars, bg_sprites)
 
         # Update and render all the nodes
         for node in all_nodes[cur_center]:
@@ -418,8 +465,9 @@ def main():
         if cur_center != 'EARTH':
             hud.render_back_arrow(full_menu_active)
         hud.render_time(date)
-        hud.render_reputation()
+        hud.render_personnel()
         hud.render_cash()
+        hud.render_reputation()
         hud.ticker.render()
 
         # Update the display, but don't exceed FPS

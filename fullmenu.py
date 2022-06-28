@@ -76,8 +76,8 @@ class FullMenu():
         self.acq_button_rect = pyg.rect.Rect(840, 510, 290, 70)
 
         # --- Cyber tab ---
-        self.cyber_def_level = 1
-        self.cyber_off_level = 1
+        self.cyber_def_level = 0
+        self.cyber_off_level = 0
 
         self.cyber_attr = {'MDef': 0, 'System Monitoring': 0, 'Updates': 0,
                            'Funding': 0, 'White Hat': 0}
@@ -86,6 +86,10 @@ class FullMenu():
         self.cyber_def_level_cost = 1000
         self.cyber_def_rep_increase = 10
 
+        self.cyber_map_rect = pyg.rect.Rect(650, 150, 550, 380)
+        self.cyber_map = pyg.Surface(self.cyber_map_rect.size)
+        self.cyber_map.blit(images['world_map'], (0, 0))
+
         # Static rects
         self.cyber_def_rect = pyg.rect.Rect(5, 50, 630, 645)
         self.cyber_def_header = pyg.rect.Rect(30, 60, 300, 60)
@@ -93,13 +97,73 @@ class FullMenu():
         self.cyber_graph_rect = pyg.rect.Rect(25, 150, 580, 400)
         self.cyber_off_rect = pyg.rect.Rect(630, 50, 625, 645)
         self.cyber_off_header = pyg.rect.Rect(930, 60, 300, 60)
-        self.cyber_threats_rect = pyg.rect.Rect(20, 150, 580, 480)
 
         # --- Ops tab ---
         self.ops_bg_rect = pyg.rect.Rect(5, 50, 1250, 645)
 
+        self.ops_map_rect = pyg.rect.Rect(80, 80, 1100, 540)
+        self.ops_map = pyg.Surface(self.ops_map_rect.size)
+        self.ops_map.blit(images['world_map_big'], (0, 0))
+
+        self.ops_map_targets = []
+        self.ops_map_hitlist = [(200, 260), (360, 250), # North America
+                                (335, 480), (380, 370), # South America
+                                (565, 225), # Europe
+                                (650, 340), # Africa
+                                (690, 235), (820, 315), (1000, 255)] # Asia
+
         # --- Personnel tab ---
         self.ppl_bg_rect = pyg.rect.Rect(5, 50, 1250, 645)
+
+        self.ppl_bar_rect = pyg.rect.Rect(50, 120, 910, 200)
+        self.ppl_bar = pyg.Surface(self.ppl_bar_rect.size)
+
+        # Legend objects
+        self.ppl_legend_rect = pyg.rect.Rect(980, 120, 230, 200)
+        self.ppl_legend = pyg.Surface(self.ppl_legend_rect.size)
+        self.ppl_legend.fill(colors['pink'])
+
+        # Create the legend for the bar
+        for i, job in enumerate(list(game_info['Staff Assignments'].keys())):
+            # Draw the color for each job
+            job_color = colors[f'ppl_legend_{job}']
+            rect = pyg.rect.Rect(10, 10 + 40*i, 20, 20)
+
+            pyg.draw.rect(self.ppl_legend, job_color, rect)
+
+            # Draw the text for each job
+            text = fonts['zrnic20'].render(job, True, colors['black'])
+            self.ppl_legend.blit(text, rect.move(30, -2))
+
+        # Hiring menu
+        self.ppl_hiring_rect = pyg.rect.Rect(60, 350, 700, 280)
+        self.ppl_hiring = pyg.Surface(self.ppl_hiring_rect.size)
+
+        self.ppl_hiring_selecter = pyg.Surface((200, 280))
+        self.ppl_hiring_selecter.fill(colors['white'])
+
+        self.ppl_hiring_pic = pyg.Surface((300, 280))
+        self.ppl_hiring_pic.fill(colors['gray'])
+        # Pic placeholder text
+        text = fonts['zrnic48'].render('PICTURE', True, colors['deepblue'])
+        self.ppl_hiring_pic.blit(text, text.get_rect(center=(150, 140)))
+
+        self.ppl_hiring_info = pyg.Surface((200, 280))
+        self.ppl_hiring_info.fill(colors['darkgray'])
+
+        self.ppl_hiring.blit(self.ppl_hiring_selecter, (0, 0))
+        self.ppl_hiring.blit(self.ppl_hiring_pic, (200, 0))
+        self.ppl_hiring.blit(self.ppl_hiring_info, (500, 0))
+
+        # Picture
+        self.ppl_pic_rect = pyg.rect.Rect(780, 360, 410, 260)
+        self.ppl_pic = pyg.Surface(self.ppl_pic_rect.size)
+        self.ppl_pic.fill(colors['ddarkgray'])
+
+        # Placeholder text
+        text = fonts['zrnic48'].render('PICTURE', True, colors['lightgray'])
+        cent = (self.ppl_pic_rect.width//2, self.ppl_pic_rect.height//2)
+        self.ppl_pic.blit(text, text.get_rect(center=cent))
 
         # --- Events tab ---
         self.events_bg_rect = pyg.rect.Rect(5, 50, 1250, 645)
@@ -261,7 +325,7 @@ class FullMenu():
                         # If we have the money, purchase the satellite
                         if game_info['cash'] >= new_sat['money_cost']:
                             game_info['num_sats'] += 1
-                            game_info['Acq GPS Level'] += 1
+                            game_info[f'Acq {new_sat["name"]} Level'] += 1
                             game_info['cash'] -= new_sat['money_cost']
                             game_info['sats_owned'].append(new_sat)
 
@@ -335,6 +399,7 @@ class FullMenu():
             is_click [bool] -> True on the first frame of a mouseclick event
         Returns: None
         """
+        # --- Defensive ---
         # Tooltip rendering
         if self.cyber_def_up_rect.move(10, 10).collidepoint(m_pos):
             # Show a tooltip for upgrading defence
@@ -384,6 +449,10 @@ class FullMenu():
             # graph area. Use // so the max bar height is variable
             self.cyber_graph_inc = 300 // max_attr
 
+        # --- Offensive ---
+        if m_pressed[2] and is_click:
+            self.cyber_map.blit(images['world_map_NA'], (0, 0))
+
     def render_cyber(self):
         """
         Description: Draw the menu for the cyber tab.
@@ -411,7 +480,6 @@ class FullMenu():
         pyg.draw.line(self.image, colors['babyblue'], self.cyber_off_header.bottomleft, self.cyber_off_header.bottomright, 5)
 
         # --- Defensive ---
-        # pyg.draw.rect(self.image, colors['babygreen'], self.cyber_threats_rect)
 
         # Draw bar graph background
         pyg.draw.rect(self.image, colors['lightgray'], self.cyber_graph_rect)
@@ -458,6 +526,9 @@ class FullMenu():
             def_up_text = fonts['zrnic26'].render('Upgrade Defense', True, colors['black'])
             self.image.blit(def_up_text, def_up_text.get_rect(center=self.cyber_def_up_rect.center))
 
+        # --- Offensive ---
+        self.image.blit(self.cyber_map, self.cyber_map_rect)
+
     def update_ops(self, m_pos, m_pressed, is_click):
         """
         Description: Handle events specific to the ops tab.
@@ -468,7 +539,8 @@ class FullMenu():
             is_click [bool] -> True on the first frame of a mouseclick event
         Returns: None
         """
-        ...
+        if is_click and m_pressed[2]:
+            self.ops_map_targets.append(random.choice(self.ops_map_hitlist))
 
     def render_ops(self):
         """
@@ -476,10 +548,12 @@ class FullMenu():
         Parameters: None
         Returns: None
         """
-        placeholder = fonts['zrnic80'].render('UNDER CONSTRUCTION', True, colors['black'])
-        placeholder_rect = placeholder.get_rect(center=self.rect.center).inflate(40, 40)
-        pyg.draw.rect(self.image, colors['babyblue'], placeholder_rect)
-        self.image.blit(placeholder, placeholder_rect.move(20, 20))
+        # Render the map
+        self.image.blit(self.ops_map, self.ops_map_rect)
+
+        # Render markers for available points
+        for point in self.ops_map_targets:
+            self.image.blit(images['map_marker'], point)
 
     def update_personnel(self, m_pos, m_pressed, is_click):
         """
@@ -499,10 +573,40 @@ class FullMenu():
         Parameters: None
         Returns: None
         """
-        placeholder = fonts['zrnic80'].render('UNDER CONSTRUCTION', True, colors['black'])
-        placeholder_rect = placeholder.get_rect(center=self.rect.center).inflate(40, 40)
-        pyg.draw.rect(self.image, colors['lightgray'], placeholder_rect)
-        self.image.blit(placeholder, placeholder_rect.move(20, 20))
+        # Draw bg
+        pyg.draw.rect(self.image, colors['ppl_bg'], self.ppl_bg_rect)
+
+        # Render the legend
+        self.image.blit(self.ppl_legend, self.ppl_legend_rect)
+
+        # Draw a bar for each job that is proportional to the amount of people
+        # assigned to that specific job
+        start_x = 0
+        for job in list(game_info['Staff Assignments'].keys()):
+            job_color = colors[f'ppl_legend_{job}']
+
+            # Calculate the width of the segment that represents one job
+            width = game_info['Staff Assignments'][job]/game_info['num_personnel']*self.ppl_bar_rect.width
+
+            # Add 2 to the width to prevent round-error gaps between bars
+            rect = pyg.rect.Rect(start_x, 0, width + 2, self.ppl_bar_rect.height)
+            pyg.draw.rect(self.ppl_bar, job_color, rect)
+
+            # Draw the number of people currently assigned to a job
+            text = fonts['zrnic20'].render(f"{game_info['Staff Assignments'][job]} People", True, colors['black'])
+            self.ppl_bar.blit(text, text.get_rect(center=rect.center))
+
+            # Keep track of where the next segment should start
+            start_x += width
+
+        # Render the finished bar graph
+        self.image.blit(self.ppl_bar, self.ppl_bar_rect)
+
+        # Render hiring menu
+        self.image.blit(self.ppl_hiring, self.ppl_hiring_rect)
+
+        # Render the picture
+        self.image.blit(self.ppl_pic, self.ppl_pic_rect)
 
     def update_events(self, m_pos, m_pressed, is_click):
         """
