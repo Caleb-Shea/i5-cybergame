@@ -32,6 +32,7 @@ class HUD():
         self.arrow.blit(text, (8, -1))
         self.arrow_rect = self.arrow.get_rect()
         pyg.draw.rect(self.arrow, colors['rose'], self.arrow_rect, 2)
+        self.arrow_rect.bottomleft = (0, self.HEIGHT)
 
         # The below code creates images that are static, and therefore are
         # created only once
@@ -108,23 +109,15 @@ class HUD():
         if side != 'left':
             self.window.blit(self.vignette_r, (0, 0))
 
-    def render_back_arrow(self, full_menu_active):
+    def render_back_arrow(self):
         """
         Description: Render a back arrow that will take us back to the main
                      menu. The image is static, and therefore is created in the
                      __init__ function.
-        Parameters:
-            full_menu_active [bool] -> Is the full menu currently being shown?
+        Parameters: None
         Returns: None
         """
-        # If we're looking at a full menu, the arrow needs to be on the bottom
-        if full_menu_active:
-            self.arrow_rect.bottomleft = (0, self.HEIGHT)
-            self.window.blit(self.arrow, self.arrow_rect)
-        else:
-            # Otherwise it should be on the top
-            self.arrow_rect.topleft = (0, 0)
-            self.window.blit(self.arrow, self.arrow_rect)
+        self.window.blit(self.arrow, self.arrow_rect)
 
     def render_time(self, date):
         """
@@ -263,6 +256,20 @@ class HUD():
         rect = img.get_rect()
         rect.topleft = (50, 220)
         self.window.blit(img, rect)
+
+    def render_hover_menu(self, obj):
+        """
+        Description: Render the menu that appears at the top of the screen when
+                     the player hovers over a node/satellite.
+        Parameters:
+            obj [dict] -> A dict that contains the data for either a node or a
+                          satellite, either one works because ~flexibility~
+        Returns: None
+        """
+        name = fonts['zrnic42'].render(obj['name'], True, colors['white'])
+        name_rect = name.get_rect(y=5)
+        name_rect.centerx=self.WIDTH/2
+        self.window.blit(name, name_rect)
 
     def render_pause_menu(self):
         """

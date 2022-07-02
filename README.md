@@ -60,19 +60,17 @@ A wargame simulation made by the i5 cyber element, with inspiration from the i5 
 - Only render objects that are on screen
 - __EMenu:__ Move earth to the left when closing earth vignette
 - __EMenu:__ Add scroll limits to main screen?
+- __HUD:__ Improve pause menu
 - __FullMenu:__ Add ability for newline characters in acquisitions tab descriptions
-- Figure out what to do with the satellite nodes system
-    - __HUD:__ Move node menus to the HUD class
 - Add interactivity e.g. minigames and/or/like an actual game game
 - __Intel:__ Literally redo everything
 - Round/square-off corners of rects
+- Add ability to click on ticker to open events menu
 - Easter eggs/Achievements
 
 ### Known bugs:
-- __Acquisitions:__ Double click buys it three+ times on a trackpad
 - __FullMenu:__ On bigger screens, the border is offset
 - Pressing a key will sometimes stop the next mouse click from being registered
-- Sometimes, the earth will render on the topleft of the screen
 
 ## Credits:
 - https://freesound.org/people/EminYILDIRIM/sounds/536108/
