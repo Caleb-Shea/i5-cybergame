@@ -363,6 +363,8 @@ def main():
         # Update the earth system
         if full_menu.cur_tab == None:
             earth_sys.update()
+        else:
+            earth_sys.spin()
         earth_sys.render()
 
         # If the earth is selected and we're on the main screen, render the menu

@@ -98,6 +98,27 @@ class EarthSystem():
             if sat['name'] == self.hovered:
                 return sat
 
+    def spin(self):
+        """
+        Description: Spin the nodes and the sats around the earth.
+        Parameters: None
+        Returns: None
+        """
+        earth_rect = self.nodes['EARTH']['rect']
+
+        # Nodes
+        for node in self.nodes.values():
+            if node['name'] == 'EARTH': continue
+            node['theta'] += 0.001
+            node['rect'].center = (earth_rect.centerx + node['dist'] * math.cos(node['theta']),
+                                   earth_rect.centery + node['dist'] * math.sin(node['theta']))
+
+        # Sats
+        for sat in self.sats:
+            sat['theta'] += 0.0015
+            sat['rect'].center = (earth_rect.centerx + sat['dist'] * math.cos(sat['theta']),
+                                  earth_rect.centery + sat['dist'] * math.sin(sat['theta']))
+
     def update(self, is_click=False):
         """
         Description: Update the position of everything, handle mouseclicks.
@@ -133,14 +154,6 @@ class EarthSystem():
             else:
                 self.selected = None
 
-        # --- Update positions ---
-        earth_rect = self.nodes['EARTH']['rect']
-        for node in self.nodes.values():
-            if node['name'] == 'EARTH': continue
-            node['theta'] += 0.001
-            node['rect'].center = (earth_rect.centerx + node['dist'] * math.cos(node['theta']),
-                                   earth_rect.centery + node['dist'] * math.sin(node['theta']))
-
         # --- Satellite management ---
         # Add new sats if necessary
         while len(self.sats) < game_info['num_sats']:
@@ -167,11 +180,8 @@ class EarthSystem():
                        'theta': theta}
             self.sats.append(new_sat)
 
-        # Rotate and update position
-        for sat in self.sats:
-            sat['theta'] += 0.0015
-            sat['rect'].center = (earth_rect.centerx + sat['dist'] * math.cos(sat['theta']),
-                                  earth_rect.centery + sat['dist'] * math.sin(sat['theta']))
+        # Spin nodes and sats
+        self.spin()
 
     def render(self):
         """
