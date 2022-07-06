@@ -144,14 +144,30 @@ class EarthSystem():
         # --- Satellite management ---
         # Add new sats if necessary
         while len(self.sats) < game_info['num_sats']:
+            # Create a surface
             surf = pyg.Surface((30, 30)).convert_alpha()
             surf.fill(colors['sand'])
+
+            # Create the sat's data
             dist = random.randint(300, 400)
             theta = random.random() * 2*math.pi
-            new_sat = {'name':'sat1','surf': surf, 'rect': surf.get_rect(), 'dist': dist,
+
+            # Name each individual satellite based on what type we're missing
+            sat_names = ['GPS', 'ABD', 'SPI', 'MDef', 'ABCDE', 'IROOI', 'ICBM', 'B.O.L.L.S.', 'Nukes']
+            for n in sat_names:
+                if len([i for i in self.sats if i['name'] == n]) < game_info[f'Acq {n} Level']:
+                    name = n
+                    break
+            else:
+                # Failsafe
+                name = 'UNKNOWN SATELLITE'
+
+            # Create a new sat "instance"
+            new_sat = {'name': name, 'surf': surf, 'rect': surf.get_rect(), 'dist': dist,
                        'theta': theta}
             self.sats.append(new_sat)
 
+        # Rotate and update position
         for sat in self.sats:
             sat['theta'] += 0.0015
             sat['rect'].center = (earth_rect.centerx + sat['dist'] * math.cos(sat['theta']),
@@ -191,7 +207,11 @@ class EarthSystem():
 
         # Render satellites
         for sat in self.sats:
-            self.window.blit(sat['surf'], sat['rect'])
+            if self.hovered == sat['name']:
+                # If we're hovering over a node, render it bigger
+                self.window.blit(pyg.transform.smoothscale(sat['surf'], sat['rect'].inflate(6, 6).size), sat['rect'].move(-3, -3))
+            else:
+                self.window.blit(sat['surf'], sat['rect'])
 
         # Render decorations
         for deco in self.decor:
