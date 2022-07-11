@@ -23,43 +23,41 @@ class EarthSystem():
         earth = pyg.Surface((130, 130)).convert_alpha()
         earth.fill(colors['clear'])
         pyg.draw.circle(earth, colors['white'], (65, 65), 65)
-        self.nodes['EARTH'] = {'name': 'EARTH', 'surf': earth, 'rect': earth.get_rect()}
+        self.nodes['EARTH'] = {'name': 'EARTH', 'surf': earth,
+                               'rect': earth.get_rect(), 'desc': 'Home sweet home'}
         acq = pyg.Surface((100, 100)).convert_alpha()
         acq.fill(colors['clear'])
         pyg.draw.circle(acq, colors['cyan'], (50, 50), 50)
         self.nodes['ACQUISITIONS'] = {'name': 'ACQUISITIONS', 'surf': acq,
-                                      'rect': acq.get_rect(), 'dist': 130,
-                                      'theta': 2*math.pi/5}
+                                      'rect': acq.get_rect(), 'desc': 'Buy cool shit',
+                                      'dist': 130, 'theta': 2*math.pi/5}
         cyber = pyg.Surface((100, 100)).convert_alpha()
         cyber.fill(colors['clear'])
         pyg.draw.circle(cyber, colors['cyan'], (50, 50), 50)
         self.nodes['CYBER'] = {'name': 'CYBER', 'surf': cyber,
-                               'rect': cyber.get_rect(), 'dist': 130,
-                               'theta': 4*math.pi/5}
+                               'rect': cyber.get_rect(), 'desc': 'Attack and defend, virtually',
+                               'dist': 130, 'theta': 4*math.pi/5}
         intel = pyg.Surface((100, 100)).convert_alpha()
         intel.fill(colors['clear'])
         pyg.draw.circle(intel, colors['cyan'], (50, 50), 50)
         self.nodes['INTEL'] = {'name': 'INTEL', 'surf': intel,
-                               'rect': intel.get_rect(), 'dist': 130,
-                               'theta': 6*math.pi/5}
+                               'rect': intel.get_rect(), 'desc': 'Hire James Bond for a bit',
+                               'dist': 130, 'theta': 6*math.pi/5}
         ops = pyg.Surface((100, 100)).convert_alpha()
         ops.fill(colors['clear'])
         pyg.draw.circle(ops, colors['cyan'], (50, 50), 50)
         self.nodes['OPS'] = {'name': 'OPS', 'surf': ops,
-                             'rect': ops.get_rect(), 'dist': 130,
+                             'rect': ops.get_rect(), 'desc': 'Kill Nazis', 'dist': 130,
                              'theta': 8*math.pi/5}
         ppl = pyg.Surface((100, 100)).convert_alpha()
         ppl.fill(colors['clear'])
         pyg.draw.circle(ppl, colors['cyan'], (50, 50), 50)
         self.nodes['PERSONNEL'] = {'name': 'PERSONNEL', 'surf': ppl,
-                                   'rect': ppl.get_rect(), 'dist': 130,
-                                   'theta': 10*math.pi/5}
+                                   'rect': ppl.get_rect(), 'desc': 'Buy people.',
+                                   'dist': 130, 'theta': 10*math.pi/5}
 
         # A satellite is anything orbiting the earth but isn't connected to it
         self.sats = []
-
-        # A deco object is anything that is uninteractable and has no function
-        self.decor = []
 
         # Init trackers
         self.selected = None
@@ -222,7 +220,3 @@ class EarthSystem():
                 self.window.blit(pyg.transform.smoothscale(sat['surf'], sat['rect'].inflate(6, 6).size), sat['rect'].move(-3, -3))
             else:
                 self.window.blit(sat['surf'], sat['rect'])
-
-        # Render decorations
-        for deco in self.decor:
-            self.window.blit(deco['surf'], deco['rect'])

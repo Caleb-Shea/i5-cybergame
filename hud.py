@@ -17,6 +17,7 @@ class HUD():
         """
         # Create a reference to the main window and it's size meaurements
         self.window = pyg.display.get_surface()
+        self.window_rect = self.window.get_rect()
         self.WIDTH, self.HEIGHT = pyg.display.get_window_size()
 
         # Create a news/event ticker
@@ -49,30 +50,80 @@ class HUD():
         self.p_menu = pyg.Surface(self.window.get_rect().size).convert_alpha()
         self.p_menu.fill(colors['pause_menu'])
 
+        # This is used to determine which menu page we need to render
+        self.p_page = None
+
         # Create buttons
         self.p_resume = pyg.Surface((500, 80))
-        self.p_resume.fill(colors['intel_bg'])
-        self.p_resume_rect = self.p_resume.get_rect(center=(self.WIDTH//2, 2/5*self.HEIGHT))
-        text = fonts['zrnic26'].render('RESUME', True, colors['lightgray'])
+        self.p_resume.fill(colors['indigo'])
+        self.p_resume_rect = self.p_resume.get_rect(center=(self.WIDTH//2, 1/5*self.HEIGHT))
+        text = fonts['zrnic26'].render('RESUME', True, colors['black'])
         self.p_resume.blit(text, text.get_rect(center=(250, 40)))
+
+        self.p_eq = pyg.Surface((242, 270))
+        self.p_eq.fill(colors['acq_bg'])
+        self.p_eq_rect = self.p_eq.get_rect(topleft=self.p_resume_rect.move(0, 15).bottomleft)
+        text = fonts['zrnic26'].render('EQ', True, colors['black'])
+        self.p_eq.blit(text, text.get_rect(center=(121, 40)))
+
+        self.p_credits = pyg.Surface((242, 80))
+        self.p_credits.fill(colors['ops_bg'])
+        self.p_credits_rect = self.p_credits.get_rect(topleft=self.p_eq_rect.move(15, 0).topright)
+        text = fonts['zrnic26'].render('CREDITS', True, colors['lightgray'])
+        self.p_credits.blit(text, text.get_rect(center=(121, 40)))
 
         self.p_options = pyg.Surface((242, 80))
         self.p_options.fill(colors['off_cyber_bg'])
-        self.p_options_rect = self.p_options.get_rect(topleft=self.p_resume_rect.move(0, 15).bottomleft)
+        self.p_options_rect = self.p_options.get_rect(topleft=self.p_credits_rect.move(0, 15).bottomleft)
         text = fonts['zrnic26'].render('OPTIONS', True, colors['black'])
         self.p_options.blit(text, text.get_rect(center=(121, 40)))
 
         self.p_info = pyg.Surface((242, 80))
         self.p_info.fill(colors['def_cyber_bg'])
-        self.p_info_rect = self.p_info.get_rect(topright=self.p_resume_rect.move(0, 15).bottomright)
+        self.p_info_rect = self.p_info.get_rect(topright=self.p_options_rect.move(0, 15).bottomright)
         text = fonts['zrnic26'].render('GAME INFO', True, colors['black'])
         self.p_info.blit(text, text.get_rect(center=(121, 40)))
 
         self.p_exit = pyg.Surface((500, 80))
-        self.p_exit.fill(colors['acq_bg'])
-        self.p_exit_rect = self.p_exit.get_rect(topleft=self.p_options_rect.move(0, 15).bottomleft)
-        text = fonts['zrnic26'].render('EXIT', True, colors['lightgray'])
+        self.p_exit.fill(colors['ppl_bg'])
+        self.p_exit_rect = self.p_exit.get_rect(topleft=self.p_eq_rect.move(0, 15).bottomleft)
+        text = fonts['zrnic26'].render('EXIT', True, colors['black'])
         self.p_exit.blit(text, text.get_rect(center=(250, 40)))
+
+        # Page specific init
+
+        # Credits
+        self.p_c = pyg.Surface((650, 600)).convert_alpha()
+        self.p_c.fill(colors['gray'])
+        self.p_c_rect = self.p_c.get_rect(center=(self.WIDTH/2, self.HEIGHT/2))
+
+        # Render the header
+        title = fonts['zrnic46'].render('CREDITS', True, colors['deepblue'])
+        self.p_c.blit(title, title.get_rect(midtop=(325, 20)))
+        pyg.draw.line(self.p_c, colors['deepblue'], (100, 80), (550, 80), 4)
+
+        # Render the credits themselves
+        credits = ['Michaela Kovalsky (Project Manager)',
+                   'Caleb Shea (Development Lead)',
+                   '??? (Quality Analysis Tester)',
+                   '??? (Graphic Designer)',
+                   '??? (Content Creator)',
+                   '??? (Story Planner)']
+
+        for i, credit in enumerate(credits):
+            surf = fonts['zrnic30'].render(credit, True, colors['black'])
+            pos = (20, 120 + 50*i)
+            self.p_c.blit(surf, pos)
+
+        # Options
+        self.p_o = pyg.Surface((650, 600)).convert_alpha()
+        self.p_o.fill(colors['starwhite'])
+        self.p_o_rect = self.p_o.get_rect(center=(self.WIDTH/2, self.HEIGHT/2))
+
+        # Game Info/Stats
+        self.p_gi = pyg.Surface((650, 600)).convert_alpha()
+        self.p_gi.fill(colors['black'])
+        self.p_gi_rect = self.p_gi.get_rect(center=(self.WIDTH/2, self.HEIGHT/2))
 
         # --- Vignette init ---
         # Left side
@@ -92,6 +143,9 @@ class HUD():
         self.vignette_r.fill(colors['clear'])
         pyg.draw.polygon(self.vignette_r, colors['vignette'], vig2_points)
         pyg.draw.polygon(self.vignette_r, colors['vignette_b'], vig2_points, 10)
+
+        # --- Earth Locator init ---
+        self.e_loc_rect = pyg.rect.Rect(0, 0, 60, 60)
 
     def render_vignette(self, side):
         """
@@ -212,6 +266,22 @@ class HUD():
         pyg.draw.rect(self.window, colors['rose'], dbg_rect, width=1)
         self.window.blit(img, rect)
 
+    def render_earth_loc(self, e_pos):
+        """
+        Description: Render a locator pointing towards the earth when the earth
+                     is off the screen.
+        Parameters:
+            e_pos [tuple] -> Absolute position of the earth
+        Returns: None
+        """
+        # Update rect position
+        self.e_loc_rect.center = e_pos
+        self.e_loc_rect.clamp_ip(self.window_rect)
+
+        # Draw marker
+        pyg.draw.circle(self.window, colors['white'], self.e_loc_rect.center,
+                        self.e_loc_rect.width/2)
+
     def render_earth_menu(self):
         """
         Description: Render the earth's menu.
@@ -271,6 +341,11 @@ class HUD():
         name_rect.centerx=self.WIDTH/2
         self.window.blit(name, name_rect)
 
+        desc = fonts['zrnic26'].render(obj['desc'], True, colors['white'])
+        desc_rect = desc.get_rect(y=name_rect.bottom)
+        desc_rect.centerx=self.WIDTH/2
+        self.window.blit(desc, desc_rect)
+
     def render_pause_menu(self):
         """
         Description: Render the pause menu.
@@ -278,7 +353,24 @@ class HUD():
         Returns: None
         """
         self.window.blit(self.p_menu, (0, 0))
-        self.window.blit(self.p_resume, self.p_resume_rect)
-        self.window.blit(self.p_options, self.p_options_rect)
-        self.window.blit(self.p_info, self.p_info_rect)
-        self.window.blit(self.p_exit, self.p_exit_rect)
+
+        if self.p_page == None:
+            # Main pause menu
+            self.window.blit(self.p_resume, self.p_resume_rect)
+            self.window.blit(self.p_eq, self.p_eq_rect)
+            self.window.blit(self.p_credits, self.p_credits_rect)
+            self.window.blit(self.p_options, self.p_options_rect)
+            self.window.blit(self.p_info, self.p_info_rect)
+            self.window.blit(self.p_exit, self.p_exit_rect)
+
+        elif self.p_page == 'credits':
+            # Credits screen
+            self.window.blit(self.p_c, self.p_c_rect)
+
+        elif self.p_page == 'options':
+            # Options menu
+            self.window.blit(self.p_o, self.p_o_rect)
+
+        elif self.p_page == 'info':
+            # General game info screen
+            self.window.blit(self.p_gi, self.p_gi_rect)

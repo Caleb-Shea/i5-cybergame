@@ -125,6 +125,7 @@ def scroll_the_earth(earth_sys, target, bg_stars):
 def main():
     # Get references to the window and it's size
     window = pyg.display.get_surface()
+    window_rect = window.get_rect()
     WIDTH, HEIGHT = pyg.display.get_window_size()
 
     # full_menu is an object that is used for Earth's menu
@@ -175,7 +176,7 @@ def main():
     add_shooting_star = pyg.USEREVENT + 4
     pyg.time.set_timer(add_shooting_star, 7000) # 7 sec
 
-    # Sounds
+    # audio
     ui_channel = pyg.mixer.find_channel()
     soundtrack_channel = pyg.mixer.find_channel()
 
@@ -192,30 +193,43 @@ def main():
 
                 elif event.type == pyg.KEYUP:
                     if event.key == pyg.K_ESCAPE:
-                        is_paused = False
+                        if hud.p_page != None:
+                            hud.p_page = None
+                        else:
+                            is_paused = False
 
                 elif event.type == pyg.MOUSEBUTTONDOWN:
-                    ui_channel.queue(sounds['down_click'])
+                    ui_channel.queue(audio['down_click'])
 
                 elif event.type == pyg.MOUSEBUTTONUP:
-                    ui_channel.queue(sounds['up_click'])
+                    ui_channel.queue(audio['up_click'])
 
-                    # HUD buttons
-                    if hud.p_resume_rect.collidepoint(event.pos):
-                        is_paused = False
+                    # Main menu navigation
+                    if hud.p_page == None:
+                        if hud.p_resume_rect.collidepoint(event.pos):
+                            is_paused = False
 
-                    elif hud.p_options_rect.collidepoint(event.pos):
-                        ...
+                        elif hud.p_eq_rect.collidepoint(event.pos):
+                            pass
 
-                    elif hud.p_info_rect.collidepoint(event.pos):
-                        ...
+                        elif hud.p_credits_rect.collidepoint(event.pos):
+                            hud.p_page = 'credits'
 
-                    elif hud.p_exit_rect.collidepoint(event.pos):
-                        terminate()
+                        elif hud.p_options_rect.collidepoint(event.pos):
+                            hud.p_page = 'options'
+
+                        elif hud.p_info_rect.collidepoint(event.pos):
+                            hud.p_page = 'info'
+
+                        elif hud.p_exit_rect.collidepoint(event.pos):
+                            terminate()
 
             # Rendering
             window.fill(colors['space'])
             render_bg(bg_stars, bg_sprites)
+
+            earth_sys.spin()
+            earth_sys.render()
 
             # Render essential hud elements
             hud.render_time(date)
@@ -241,6 +255,7 @@ def main():
                 if event.key == pyg.K_BACKQUOTE:
                     terminate()
 
+                # Testing purposes
                 elif event.key == pyg.K_SPACE:
                     game_info['cash'] += 900000000000000
                     game_info['reputation'] += 20
@@ -248,9 +263,10 @@ def main():
                     game_info['Staff Assignments']['Unassigned'] += 100
                     game_info['Staff Assignments']['Cyber'] += 50
                     game_info['Staff Assignments']['Intel'] += 20
-                    game_info['Staff Assignments']['Ops'] += 10
-                    game_info['Staff Assignments']['Acquisitions'] += 30
+                    game_info['Staff Assignments']['Ops'] += 30
+                    game_info['Staff Assignments']['Acquisitions'] += 10
 
+                # Scroll to the earth
                 elif event.key == pyg.K_e:
                     done_scrolling = False
 
@@ -267,11 +283,11 @@ def main():
                     earth_sys.selected = None
 
             elif event.type == pyg.MOUSEBUTTONDOWN:
-                ui_channel.queue(sounds['down_click'])
+                ui_channel.queue(audio['down_click'])
                 full_menu.update(True) # We pass True because we are calling update() due to a mouse event
 
             elif event.type == pyg.MOUSEBUTTONUP:
-                ui_channel.queue(sounds['up_click'])
+                ui_channel.queue(audio['up_click'])
                 if full_menu.cur_tab == None:
                     earth_sys.update(True) # We pass True because we are calling update() due to a mouse event
 
@@ -291,8 +307,7 @@ def main():
                 hud.ticker.new_event(date)
 
             elif event.type == new_soundtrack:
-                # soundtrack_channel.queue(sounds[f'soundtrack{random.randint(1, 1)}'])
-                soundtrack_channel.queue(sounds['soundtrack1'])
+                soundtrack_channel.queue(audio[f'soundtrack{random.randint(1, 1)}'])
 
             elif event.type == add_shooting_star:
                 bg_sprites.append(new_shooting_star())
@@ -324,6 +339,11 @@ def main():
         else:
             # If we don't have a selected node, we don't render the fullmenu
             full_menu.cur_tab = None
+
+        # If we click on the earth locator, scroll to the earth
+        m_pos = pyg.mouse.get_pos()
+        if hud.e_loc_rect.collidepoint(m_pos) and m_pressed[0]:
+            done_scrolling = False
 
         # Keep scrolling until the earth is centered
         if not done_scrolling:
@@ -382,6 +402,8 @@ def main():
             hud.render_back_arrow()
         if earth_sys.hovered != None:
             hud.render_hover_menu(earth_sys.get_hovered())
+        if not window_rect.colliderect(earth_sys.nodes['EARTH']['rect']):
+            hud.render_earth_loc(earth_sys.nodes['EARTH']['rect'].center)
         hud.render_time(date)
         hud.render_personnel()
         hud.render_cash()
