@@ -10,28 +10,19 @@ A wargame simulation made by the i5 cyber element, with inspiration from the i5 
 - ??? (Story Planner)
 
 ### Brainstorming:
-- Acquitions will be where the player buys satellites
-    - Each satellite will require personnel to keep running, the more people are assigned to a satellite, the higher level the satellite will be
-- Ops will be where the player completes missions to increase reputation and ___
-    - Spending money, time, and workers
-- Intel will be where the player attends briefs to unlock missions and increase reputation
-    - Briefs are unlocked by purchasing new satellites and completing missions
-    - Cost very little money but require a certain number of free workers to attend
-        - You can only attend briefs if you have an available worker?
-- Cyber will be where the player counters threats to their missions and satellites
-    - Can either be a huge part of the game, or a pretty small part of it
-    - Offensive/ Defensive teams
-- Personnel will be where the player hires contractors, workers, and other people
-    - This is where the player can see what all their workers are doing
-    - People (in the 1000s?) will be shown what they're current task is
-    - Bar graph?
-- Events will be where the player interacts with the news events they saw on the news ticker
-    - The player should not spend extensive time on this menu
+- Cutscenes?
+  - After buying a new sat, attending a brief, etc., should there be a 2-5 second cutscene highlighting the new thing?
+
+- Ops gameplay:
+  - On selection of mission location, one of the following happens:
+    - XCOM style, except instead of people with guns, it's satellites with lasers and comms and shit. There is (unseen) ground/air troops that we are trying to enable to complete a mission.
+    - XCOM style, except instead of people with guns, it's satellites with lasers and comms and shit. We can see the ground/air forces under us, they move on their own and we have to feed them info and destry enemies to allow them to make it to the goal. As the game goes on, the space force gets requested for more and more high profile cases that require more and more resources.
+  - *Turn-based strategy fits the theme more, but real time action is arguably more enjoyable for a wider audience.
 
 ### Win conditions
 - Beat Russia/China
-    - Launch a pre-emptive strike by upgrading cyber and/or ops to a high enough level
-    - Or, develop strong enough defenses that when the attack comes, it causes no harm
+  - Launch a pre-emptive strike by upgrading cyber and/or ops to a high enough level
+  - Or, develop strong enough defenses that when the attack comes, it causes no harm
 
 ### General:
 - `pygame.sprite.LayeredUpdates()` is a thing. At some point this might be helpful
@@ -50,21 +41,17 @@ A wargame simulation made by the i5 cyber element, with inspiration from the i5 
 |Pictures w/ animation for satellites/missiles|9|
 |UI/UX|1-3 styles|
 |A soundtrack|3+ ~3-4 min tracks|
+|Fonts|Title, Header, Sub-Header, and Body fonts|
 
 *Could be pseudorandomly generated
 
 ### Todo list:
-- __HUD:__ Restructure HUD rendering to limit number of functions
-- __Acquisitions:__ Add stats panel underneath the picture
-- Change Acquitions/Cyber tab to use surfaces
-- Only render objects that are on screen
-- __EMenu:__ Move earth to the left when closing earth vignette
-- __EMenu:__ Add scroll limits to main screen?
-- __HUD:__ Improve pause menu
-- __FullMenu:__ Add ability for newline characters in acquisitions tab descriptions
 - Add interactivity e.g. minigames and/or/like an actual game game
-- __Intel:__ Literally redo everything
+- __EMenu:__ Move earth to the left when closing earth vignette
+- __FullMenu:__ Add ability for newline characters in acquisitions tab descriptions
+- Change Acquitions/Cyber tab to use surfaces
 - Round/square-off corners of rects
+- Only render objects that are on screen
 - Add ability to click on ticker to open events menu
 - Easter eggs/Achievements
 
