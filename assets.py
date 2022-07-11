@@ -28,15 +28,16 @@ fonts = {'zrnic14': Font(get_path(path.join('assets', 'fonts', 'zrnic.ttf')), 14
          'zrnic32': Font(get_path(path.join('assets', 'fonts', 'zrnic.ttf')), 32),
          'zrnic36': Font(get_path(path.join('assets', 'fonts', 'zrnic.ttf')), 36),
          'zrnic42': Font(get_path(path.join('assets', 'fonts', 'zrnic.ttf')), 42),
+         'zrnic46': Font(get_path(path.join('assets', 'fonts', 'zrnic.ttf')), 46),
          'zrnic48': Font(get_path(path.join('assets', 'fonts', 'zrnic.ttf')), 48),
          'zrnic80': Font(get_path(path.join('assets', 'fonts', 'zrnic.ttf')), 80)}
 
-sounds = {'up_click': Sound(get_path(path.join('assets', 'sounds', 'up_click.wav'))),
-          'down_click': Sound(get_path(path.join('assets', 'sounds', 'down_click.wav'))),
-          'soundtrack1': Sound(get_path(path.join('assets', 'sounds', 'soundtrack', 'Empty Head.mp3')))}
+audio = {'up_click': Sound(get_path(path.join('assets', 'audio', 'up_click.wav'))),
+          'down_click': Sound(get_path(path.join('assets', 'audio', 'down_click.wav'))),
+          'soundtrack1': Sound(get_path(path.join('assets', 'audio', 'soundtrack', 'Empty Head.mp3')))}
 
-sounds['down_click'].set_volume(.75)
-sounds['soundtrack1'].set_volume(.25)
+audio['down_click'].set_volume(.75)
+audio['soundtrack1'].set_volume(.25)
 
 images = {'earth_ss': pyg.image.load(path.join('assets', 'images', 'earth.png')),
           'world_map': pyg.image.load(path.join('assets', 'images', 'world_map.png')),
@@ -50,34 +51,39 @@ colors = {'clear': pyg.Color(  0,   0,   0,   0),
           'ticker_bg': pyg.Color(220, 220, 220),
           'vignette': pyg.Color( 50,  50, 100, 150),
           'vignette_b': pyg.Color(  0,   0,   0, 200),
+
           'intel_bg': pyg.Color(  5,   0,  30, 150),
-          'acq_bg': pyg.Color(220,  60,  30,  30),
+          'acq_bg': pyg.Color(205, 255,   0,  20),
+          'ops_bg': pyg.Color( 60,  60,  60, 100),
+          'def_cyber_bg': pyg.Color(200, 240, 200,  50),
+          'off_cyber_bg': pyg.Color(140, 210, 240,  50),
+          'events_bg': pyg.Color(220,  10,  200,  30),
+          'events_reel': pyg.Color(220, 220, 200),
           'ppl_bg': pyg.Color(40, 200, 230,  30),
           'ppl_legend_Intel': pyg.Color(255,   0,   0),
           'ppl_legend_Ops': pyg.Color(  0,   0, 255),
           'ppl_legend_Cyber': pyg.Color(255, 255,   0),
           'ppl_legend_Acquisitions': pyg.Color(  0, 255,   0),
           'ppl_legend_Unassigned': pyg.Color(128,   0, 255),
-          'events_bg': pyg.Color(220,  10,  200,  30),
-          'events_reel': pyg.Color(220, 220, 200),
-          'def_cyber_bg': pyg.Color(200, 240, 200,  50),
-          'off_cyber_bg': pyg.Color(140, 210, 240,  50),
+
           'white': pyg.Color(255, 255, 255),
           'starwhite': pyg.Color(230, 230, 230),
           'lightgray': pyg.Color(200, 200, 200),
           'gray': pyg.Color(120, 120, 120),
           'darkgray': pyg.Color( 50,  50,  50), # Maybe switch to '25%white' etc
           'ddarkgray': pyg.Color( 30,  30,  30),
-          'space': pyg.Color(  0,   0,   7),
           'black': pyg.Color(  0,   0,   0),
+          'space': pyg.Color(  0,   0,   7),
+          'pink': pyg.Color(255,   0, 255),
+          'rose': pyg.Color(255,   0,  80),
           'red': pyg.Color(255,   0,   0),
+          'red_sand': pyg.Color(200, 120, 100),
           'orange': pyg.Color(220, 100,   5),
           'yellow': pyg.Color(255, 255,   0),
           'sand': pyg.Color(240, 230, 150),
-          'red_sand': pyg.Color(200, 120, 100),
+          'lime': pyg.Color( 80, 255,   0),
           'babygreen': pyg.Color(200, 240, 200),
           'green': pyg.Color(  0, 255,   0),
-          'lime': pyg.Color( 80, 255,   0),
           'mint': pyg.Color(  0, 255, 170),
           'cyan': pyg.Color(  0, 255, 255),
           'babyblue': pyg.Color(140, 210, 240),
@@ -85,6 +91,4 @@ colors = {'clear': pyg.Color(  0,   0,   0,   0),
           'blue': pyg.Color(  0,   0, 255),
           'deepblue': pyg.Color(  5,   0, 20),
           'indigo': pyg.Color( 50,   0, 255),
-          'purple': pyg.Color(128,   0, 255),
-          'pink': pyg.Color(255,   0, 255),
-          'rose': pyg.Color(255,   0,  80)}
+          'purple': pyg.Color(128,   0, 255)}
