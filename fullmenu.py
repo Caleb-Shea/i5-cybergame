@@ -42,29 +42,33 @@ class FullMenu():
 
         # Tab specific initalization
         # --- Intel tab ---
-        self.intel_bg_rect = pyg.rect.Rect(5, 50, 1250, 645)
-        self.hovered_brief_id = -1
-        self.selected_brief_id = -1
-        self.brief_buy_timer = 0
-        self.num_briefs_to_show = 8
-        self.num_briefs_per_col = (self.rect.height - 200) // 150 + 1
-        self.cur_briefs = fullmenu_data.briefs[:self.num_briefs_to_show]
-        self.all_briefs = fullmenu_data.briefs[self.num_briefs_to_show:]
-        # Create all the rects needed
+        self.briefs = fullmenu_data.intel_briefs
+        self.hovered_brief = -1
+        self.selected_brief = -1
         self.brief_rects = []
-        for i in range(len(self.cur_briefs)):
-            size = (360, 100)
-            rect = pyg.rect.Rect((0, 0), size)
+        for i in range(len(self.briefs)):
+            x = 50
+            y = 80 + 100*i
+            # 2nd column
+            if y+100 > self.rect.bottom:
+                y -= self.rect.height - 100
+                x = 660
+            # Break once we're out of screen
+            if y+100 > self.rect.bottom and x == 660:
+                break
+
+            rect = pyg.rect.Rect((x, y), (550, 70))
             self.brief_rects.append(rect)
+
+        self.intel_bg_rect = pyg.rect.Rect(5, 50, 1250, 645)
 
         # --- Acquisitions tab ---
         self.sats = fullmenu_data.acq_data
         self.hovered_sat = -1
         self.selected_sat = -1
         self.sat_rects = []
-        for i in range(9):
-            size = (250, 55)
-            rect = pyg.rect.Rect((80, 100 + (500/9)*i), size)
+        for i in range(len(self.sats)):
+            rect = pyg.rect.Rect((80, 100 + (500/len(self.sats))*i), (250, 55))
             self.sat_rects.append(rect)
 
         self.acq_bg_rect = pyg.rect.Rect(5, 50, 1250, 645)
@@ -74,6 +78,7 @@ class FullMenu():
         self.acq_descbg_rect = pyg.rect.Rect(830, 110, 310, 480)
         self.acq_desc_rect = pyg.rect.Rect(840, 180, 290, 400)
         self.acq_button_rect = pyg.rect.Rect(840, 510, 290, 70)
+        self.acq_stats_rect = pyg.rect.Rect(400, 485, 400, 100)
 
         # --- Cyber tab ---
         self.cyber_def_level = 0
@@ -90,7 +95,6 @@ class FullMenu():
         self.cyber_map = pyg.Surface(self.cyber_map_rect.size)
         self.cyber_map.blit(images['world_map'], (0, 0))
 
-        # Static rects
         self.cyber_def_rect = pyg.rect.Rect(5, 50, 630, 645)
         self.cyber_def_header = pyg.rect.Rect(30, 60, 300, 60)
         self.cyber_def_up_rect = pyg.rect.Rect(215, 590, 300, 60)
@@ -179,48 +183,27 @@ class FullMenu():
             is_click [bool] -> True on the first frame of a mouseclick event
         Returns: None
         """
-        # Set the positions of the brief buttons
+        # Detect hovering
         for i, rect in enumerate(self.brief_rects):
-            if i%2 == 1:
-                rect.x = 200
-            else:
-                rect.x = 100
-            rect.x += i // self.num_briefs_per_col * 420
-
-            rect.y = 150*(i % self.num_briefs_per_col) + 75
-
-        # Handle mouse clicks
-        if m_pressed[0]:
-            # Check if any briefs have been clicked on
-            for i, rect in enumerate(self.brief_rects):
-                # We move the rect because the mouse coords are absolute, but the
-                # rect coords are based on the topleft of the menu
-                if rect.move(10, 10).collidepoint(m_pos):
-                    if i == self.selected_brief_id:
-                        self.selected_brief_id == -1
-                    else:
-                        self.selected_brief_id = i
-
-            if self.selected_brief_id == -1: # Do nothing
-                pass
-            elif self.brief_buy_timer >= 30: # Click and hold to purchase the brief
-                self.cur_briefs.pop(self.selected_brief_id)
-                if len(self.all_briefs) > 0:
-                    self.cur_briefs.append(self.all_briefs.pop(0))
-                self.brief_buy_timer = 0
-            else:
-                self.brief_buy_timer += 1 # Increment timer
-
-        else:
-            # If the mouse isn't pressed, reset
-            self.selected_brief_id = -1
-            self.brief_buy_timer = 0
-
-        # Handle mouse hovering
-        self.hovered_brief_id = -1
-        for i, rect in zip(range(len(self.cur_briefs)), self.brief_rects):
             if rect.move(10, 10).collidepoint(m_pos):
-                self.hovered_brief_id = i
+                # We move the rect because these rects are not based on the
+                # main window
+                self.hovered_brief = i
+                break
+        else:
+            self.hovered_brief = -1
+
+        # Detect clicks
+        if m_pressed[0]:
+            for i, rect in enumerate(self.brief_rects):
+                if abs(self.selected_brief - i) == 1:
+                    continue
+                # If we clicked on a rect
+                if rect.move(10, 10).collidepoint(m_pos):
+                    self.selected_brief = i
+                    break
+            else: # If we didn't break from the loop, deselect
+                self.selected_brief = -1
 
     def render_intel(self):
         """
@@ -231,54 +214,39 @@ class FullMenu():
         # Draw bg
         pyg.draw.rect(self.image, colors['intel_bg'], self.intel_bg_rect)
 
-        # Create buttons for each of the current briefs
-        for brief, rect in zip(self.cur_briefs, self.brief_rects):
-            # If it's expensive, make it a different color
-            if brief['cost'] > 1500:
-                c = colors['red']
+        # Draw each brief
+        sel_rect = None
+        sel_brief = None
+        for i, rect in enumerate(self.brief_rects): # Rects
+            if i == self.selected_brief: # Selected rect
+                sel_rect = rect.inflate(0, 200)
+                sel_brief = self.briefs[i]
+            elif i == self.hovered_brief:
+                pyg.draw.rect(self.image, colors['purple'], rect) # Hovered color
             else:
-                c = colors['darkgray']
+                pyg.draw.rect(self.image, colors['pink'], rect) # Unselected color
 
-            # If a brief is clicked and held, fade to black
-            if self.selected_brief_id == self.cur_briefs.index(brief):
-                c = colors['intel_bg'].lerp(c, 1 - min(self.brief_buy_timer/30, 1))
+            # Draw the name
+            name = fonts['zrnic32'].render(self.briefs[i]['name'], True, colors['black'])
+            self.image.blit(name, name.get_rect(center=rect.center))
 
-            pyg.draw.rect(self.image, c, rect)
+        # Draw the selected rect after the other rects so it's on top
+        if sel_rect != None:
+            pyg.draw.rect(self.image, colors['purple'], sel_rect)
 
-            # Draw the text on top of the brief button
-            text = fonts['zrnic24'].render(brief['name'], True, colors['starwhite'])
-            text_rect = text.get_rect(center=rect.center)
-            self.image.blit(text, text_rect)
+            # Attend button
+            sel_buy = pyg.rect.Rect(0, 0, 530, 50)
+            sel_buy.bottom = sel_rect.bottom - 10
+            sel_buy.centerx = sel_rect.centerx
+            pyg.draw.rect(self.image, colors['red'], sel_buy)
 
-        # Loop again for the tooltips so they are always on top
-        for brief, rect in zip(self.cur_briefs, self.brief_rects):
-            # If hovered, draw a tooltip
-            if self.hovered_brief_id == self.cur_briefs.index(brief):
-                tt = pyg.Surface((250, 250)).convert_alpha()
-                ttrect = tt.get_rect()
-                ttrect.midleft = rect.midright
+            # Attend text
+            attend = fonts['zrnic26'].render('Attend Brief', True, colors['black'])
+            self.image.blit(attend, attend.get_rect(center=sel_buy.center))
 
-                # Set the bg color
-                tt.fill(colors['clear'])
-                tt.fill(colors['lightgray'], (15, 0, 250 - 15, 250))
-
-                # Draw an arrow pointing towards the brief
-                pyg.draw.polygon(tt, colors['lightgray'], [(0 , 125),
-                                                           (15, 110),
-                                                           (15, 140)])
-
-                # Text
-                name = fonts['zrnic24'].render(brief['name'], True, colors['black'])
-                p2b = fonts['zrnic24'].render('Click and Hold to Buy', True, colors['black'])
-                cost = fonts['zrnic24'].render(f"Cost: {brief['cost']:,}", True, colors['black'])
-                desc = word_wrap(brief['desc'], fonts['zrnic20'], colors['black'], ttrect.inflate(-25, 0))
-
-                tt.blit(name, (20, 5))
-                tt.blit(p2b, (32, 215))
-                tt.blit(cost, (140, 170))
-                tt.blit(desc, (20, 50))
-
-                self.image.blit(tt, ttrect)
+            # Render brief name
+            name = fonts['zrnic32'].render(sel_brief['name'], True, colors['black'])
+            self.image.blit(name, name.get_rect(center=sel_rect.center))
 
     def update_acq(self, m_pos, m_pressed, is_click):
         """
@@ -308,10 +276,12 @@ class FullMenu():
                     self.selected_sat = i
                     break
                 # Don't deselect the satellite if we clicked on the description
-                # or the picture
+                # or the picture or the stats graphic
                 if self.acq_descbg_rect.move(10, 10).collidepoint(m_pos):
                     break
                 if self.acq_pic_rect.move(10, 10).collidepoint(m_pos):
+                    break
+                if self.acq_stats_rect.move(10, 10).collidepoint(m_pos):
                     break
             else: # If we didn't break from the loop, deselect
                 self.selected_sat = -1
@@ -381,6 +351,9 @@ class FullMenu():
             desc = word_wrap(cur_sat['desc'], fonts['zrnic30'],
                              colors['black'], self.acq_desc_rect)
             self.image.blit(desc, self.acq_desc_rect)
+
+            # Stats
+            pyg.draw.rect(self.image, colors['cyan'], self.acq_stats_rect)
 
             # Buy button
             pyg.draw.rect(self.image, colors['pink'], self.acq_button_rect)
@@ -548,6 +521,9 @@ class FullMenu():
         Parameters: None
         Returns: None
         """
+        # Draw bg
+        pyg.draw.rect(self.image, colors['ops_bg'], self.ops_bg_rect)
+
         # Render the map
         self.image.blit(self.ops_map, self.ops_map_rect)
 
@@ -667,7 +643,7 @@ class FullMenu():
         Description: Detect mouse clicks and update active tab.
         Parameters:
             is_click [bool] -> True if this function is being called because of
-                               a mouse click, false otherwise
+                               a mouse click, False otherwise
         Returns: None
         """
         m_pos = pyg.mouse.get_pos()
@@ -727,10 +703,12 @@ class FullMenu():
         # Tracker to keep track if we have moved on to a rect that is right of
         # the currently selected tab
         right_of_sel = False
+
         for rect, name in zip(self.tab_rects, self.tab_names):
             # Draw the tabs, highlighting the selected one
             if self.cur_tab == name:
                 # We want the selected tab to be bigger than the others
+                # We use self.tab_rects to allow for flexibility with new tabs
                 rect = rect.inflate(20*len(self.tab_rects), 0).move(10*len(self.tab_rects), 0)
 
                 # Update position tracker
