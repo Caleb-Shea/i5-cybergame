@@ -283,11 +283,13 @@ def main():
                     earth_sys.selected = None
 
             elif event.type == pyg.MOUSEBUTTONDOWN:
-                ui_channel.queue(audio['down_click'])
-                full_menu.update(True) # We pass True because we are calling update() due to a mouse event
+                if event.button in [1, 3]:
+                    ui_channel.queue(audio['down_click'])
+                full_menu.update(event.button)
 
             elif event.type == pyg.MOUSEBUTTONUP:
-                ui_channel.queue(audio['up_click'])
+                if event.button in [1, 3]:
+                    ui_channel.queue(audio['up_click'])
                 if full_menu.cur_tab == None:
                     earth_sys.update(True) # We pass True because we are calling update() due to a mouse event
 
@@ -355,6 +357,10 @@ def main():
                 target = (WIDTH/2, HEIGHT/2)
 
             done_scrolling = scroll_the_earth(earth_sys, target, bg_stars)
+
+            # Cancel scroll if we click
+            if m_pressed[0] and (m_rel[0]>0 or m_rel[1]>0):
+                done_scrolling = True
 
         # Update the shooting stars
         for sprite in bg_sprites:
