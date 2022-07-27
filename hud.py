@@ -146,6 +146,7 @@ class HUD():
 
         # --- Earth Locator init ---
         self.e_loc_rect = pyg.rect.Rect(0, 0, 60, 60)
+        self.e_loc_E = fonts['zrnic24'].render('E', True, colors['black'])
 
     def render_vignette(self, side):
         """
@@ -281,6 +282,7 @@ class HUD():
         # Draw marker
         pyg.draw.circle(self.window, colors['white'], self.e_loc_rect.center,
                         self.e_loc_rect.width/2)
+        self.window.blit(self.e_loc_E, self.e_loc_E.get_rect(center=self.e_loc_rect.center))
 
     def render_earth_menu(self):
         """
@@ -341,10 +343,12 @@ class HUD():
         name_rect.centerx=self.WIDTH/2
         self.window.blit(name, name_rect)
 
-        desc = fonts['zrnic26'].render(obj['desc'], True, colors['white'])
-        desc_rect = desc.get_rect(y=name_rect.bottom)
-        desc_rect.centerx=self.WIDTH/2
-        self.window.blit(desc, desc_rect)
+        # Check for description because sats don't use them
+        if 'desc' in obj.keys():
+            desc = fonts['zrnic26'].render(obj['desc'], True, colors['white'])
+            desc_rect = desc.get_rect(y=name_rect.bottom)
+            desc_rect.centerx=self.WIDTH/2
+            self.window.blit(desc, desc_rect)
 
     def render_pause_menu(self):
         """
