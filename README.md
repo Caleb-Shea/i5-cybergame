@@ -40,7 +40,7 @@ A wargame simulation made by the i5 cyber element, with inspiration from the i5 
 |Pictures w/ animation for Earth|1-2|
 |Pictures w/ animation for satellites/missiles|9|
 |UI/UX|1-3 styles|
-|A soundtrack|3+ ~3-4 min tracks|
+|A soundtrack|3+ ~1-4 min tracks|
 |Fonts|Title, Header, Sub-Header, and Body fonts|
 
 *Could be pseudorandomly generated
@@ -61,5 +61,7 @@ A wargame simulation made by the i5 cyber element, with inspiration from the i5 
 
 ## Credits:
 - https://freesound.org/people/EminYILDIRIM/sounds/536108/
+- https://freesound.org/people/plasterbrain/sounds/423166/
 - https://freemusicarchive.org/music/nul-tiel-records/electronica/empty-head-1/
 - https://loading.io
+- https://www.markdownguide.org/extended-syntax/#fenced-code-blocks

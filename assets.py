@@ -34,10 +34,12 @@ fonts = {'zrnic14': Font(get_path(path.join('assets', 'fonts', 'zrnic.ttf')), 14
 
 audio = {'up_click': Sound(get_path(path.join('assets', 'audio', 'up_click.wav'))),
           'down_click': Sound(get_path(path.join('assets', 'audio', 'down_click.wav'))),
-          'soundtrack1': Sound(get_path(path.join('assets', 'audio', 'soundtrack', 'Empty Head.mp3')))}
+          'soundtrack1': Sound(get_path(path.join('assets', 'audio', 'soundtrack', 'Empty Head.mp3'))),
+          'ui_error': Sound(get_path(path.join('assets', 'audio', 'ui_error.flac')))}
 
 audio['down_click'].set_volume(.75)
 audio['soundtrack1'].set_volume(.25)
+audio['ui_error'].set_volume(.15)
 
 images = {'earth_ss': pyg.image.load(path.join('assets', 'images', 'earth.png')),
           'world_map': pyg.image.load(path.join('assets', 'images', 'world_map.png')),

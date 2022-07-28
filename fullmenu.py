@@ -8,15 +8,20 @@ from assets import *
 
 
 class FullMenu():
-    def __init__(self):
+    def __init__(self, ui_channel):
         """
         Description: A class to represent a full screen type menu. This type of
                      menu is used for the nodes connected directly to the Earth,
                      such as OPS, ACQUISITIONS, and CYBER, among others.
-        Parameters: None
+        Parameters:
+            ui_channel [pyg.mixer.Channel()] -> The sound channel reserved for
+                                                ui sfx
         Returns: FullMenu()
         """
         self.window = pyg.display.get_surface()
+
+        # Sound channels
+        self.ui_channel = ui_channel
 
         # Create the image for the full menu
         self.rect = self.window.get_rect().inflate(-20, -20)
@@ -304,6 +309,8 @@ class FullMenu():
                             game_info['sats_owned'].append(new_sat)
 
                             new_sat['money_cost'] = int(round(new_sat['money_cost'] * 1.15, -1))
+                        else:
+                            self.ui_channel.play(audio['ui_error'])
 
     def render_acq(self):
         """
@@ -414,11 +421,15 @@ class FullMenu():
                     # And has the available resources
                     if game_info['cash'] >= self.cyber_def_level_cost:
                         upgrade_random_attr()
+                    else:
+                        self.ui_channel.play(audio['ui_error'])
             else:
                 if self.cyber_def_up_rect.collidepoint(m_pos):
                     # And has the available resources
                     if game_info['cash'] >= self.cyber_def_level_cost:
                         upgrade_random_attr()
+                    else:
+                        self.ui_channel.play(audio['ui_error'])
 
         # Adjust graph increment if necessary
         max_attr = max(list(self.cyber_attr.values()))

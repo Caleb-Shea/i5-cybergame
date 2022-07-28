@@ -128,8 +128,12 @@ def main():
     window_rect = window.get_rect()
     WIDTH, HEIGHT = pyg.display.get_window_size()
 
+    # Audio
+    ui_channel = pyg.mixer.find_channel()
+    soundtrack_channel = pyg.mixer.find_channel()
+
     # full_menu is an object that is used for Earth's menu
-    full_menu = FullMenu()
+    full_menu = FullMenu(ui_channel)
 
     # This holds all the information needed for earth's system
     earth_sys = EarthSystem()
@@ -175,10 +179,6 @@ def main():
     pyg.time.set_timer(new_soundtrack, 300000) # 5 min
     add_shooting_star = pyg.USEREVENT + 4
     pyg.time.set_timer(add_shooting_star, 7000) # 7 sec
-
-    # audio
-    ui_channel = pyg.mixer.find_channel()
-    soundtrack_channel = pyg.mixer.find_channel()
 
     while True:
         # Pause menu
@@ -283,13 +283,18 @@ def main():
                     earth_sys.selected = None
 
             elif event.type == pyg.MOUSEBUTTONDOWN:
+                # Play sfx only when the left or right button is clicked
                 if event.button in [1, 3]:
-                    ui_channel.queue(audio['down_click'])
+                    if not ui_channel.get_busy():
+                        ui_channel.play(audio['down_click'])
                 full_menu.update(event.button)
 
             elif event.type == pyg.MOUSEBUTTONUP:
+                # Play sfx only when the left or right button is clicked
                 if event.button in [1, 3]:
-                    ui_channel.queue(audio['up_click'])
+                    # Only play the up_click sound after the down_click sound
+                    if ui_channel.get_sound() == audio['down_click']:
+                        ui_channel.queue(audio['up_click'])
                 if full_menu.cur_tab == None:
                     earth_sys.update(True) # We pass True because we are calling update() due to a mouse event
 
@@ -333,7 +338,7 @@ def main():
                                   'PERSONNEL']:
             # And there isn't another tab already selected
             if full_menu.cur_tab == None:
-                # Set the cur_tab and render the fullmenu
+                # Set the cur_tab
                 full_menu.cur_tab = earth_sys.selected
 
                 # Update hovering trackers
@@ -345,6 +350,10 @@ def main():
         # If we click on the earth locator, scroll to the earth
         m_pos = pyg.mouse.get_pos()
         if hud.e_loc_rect.collidepoint(m_pos) and m_pressed[0]:
+            done_scrolling = False
+
+        # If we click on the earth, move the earth so it's in the open area
+        if earth_sys.selected == 'EARTH':
             done_scrolling = False
 
         # Keep scrolling until the earth is centered
