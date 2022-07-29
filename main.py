@@ -293,7 +293,7 @@ def main():
                 # Play sfx only when the left or right button is clicked
                 if event.button in [1, 3]:
                     # Only play the up_click sound after the down_click sound
-                    if ui_channel.get_sound() == audio['down_click']:
+                    if ui_channel.get_sound() in [None, audio['down_click']]:
                         ui_channel.queue(audio['up_click'])
                 if full_menu.cur_tab == None:
                     earth_sys.update(True) # We pass True because we are calling update() due to a mouse event
@@ -384,7 +384,7 @@ def main():
 
         # Payday is the first of every month
         if date.day == 1 and not got_payday:
-            game_info['budget'] = 10000 * game_info['reputation']
+            game_info['budget'] = 1000000 * game_info['reputation'] + 250000 * game_info['num_sats']
             game_info['cash'] += game_info['budget']
             got_payday = True
         # Reset tracker

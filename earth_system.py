@@ -155,14 +155,6 @@ class EarthSystem():
         # --- Satellite management ---
         # Add new sats if necessary
         while len(self.sats) < game_info['num_sats']:
-            # Create a surface
-            surf = pyg.Surface((30, 30)).convert_alpha()
-            surf.fill(colors['sand'])
-
-            # Create the sat's data
-            dist = random.randint(300, 400)
-            theta = random.random() * 2*math.pi
-
             # Name each individual satellite based on what type we're missing
             sat_names = ['GPS', 'ABD', 'SPI', 'MDef', 'ABCDE', 'IROOI', 'ICBM', 'B.O.L.L.S.', 'Nukes']
             for n in sat_names:
@@ -172,6 +164,17 @@ class EarthSystem():
             else:
                 # Failsafe
                 name = 'UNKNOWN SATELLITE'
+
+            # Create a surface
+            if name in ['GPS', 'ICBM', 'MDef', 'Nukes']:
+                surf = images[name]
+            else:
+                surf = pyg.Surface((32, 32))
+                surf.fill(colors['sand'])
+
+            # Create the sat's data
+            dist = random.randint(300, 400)
+            theta = random.random() * 2*math.pi
 
             # Create a new sat "instance"
             new_sat = {'name': name, 'surf': surf, 'rect': surf.get_rect(), 'dist': dist,

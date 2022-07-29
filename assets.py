@@ -45,7 +45,11 @@ images = {'earth_ss': pyg.image.load(path.join('assets', 'images', 'earth.png'))
           'world_map': pyg.image.load(path.join('assets', 'images', 'world_map.png')),
           'world_map_NA': pyg.image.load(path.join('assets', 'images', 'world_map_NA.png')),
           'world_map_big': pyg.image.load(path.join('assets', 'images', 'world_map_big.png')),
-          'map_marker': pyg.image.load(path.join('assets', 'images', 'map_marker.png'))}
+          'map_marker': pyg.image.load(path.join('assets', 'images', 'map_marker.png')),
+          'GPS': pyg.image.load(path.join('assets', 'images', 'sats', 'gps.png')),
+          'MDef': pyg.image.load(path.join('assets', 'images', 'sats', 'mdef.png')),
+          'Nukes': pyg.image.load(path.join('assets', 'images', 'sats', 'nuke.png')),
+          'ICBM': pyg.image.load(path.join('assets', 'images', 'sats', 'icbm.png'))}
 
 colors = {'clear': pyg.Color(  0,   0,   0,   0),
           'hud_bg': pyg.Color(  5,   0,  30, 230),
