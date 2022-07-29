@@ -20,6 +20,34 @@ from assets import *
 from hud import HUD
 
 
+def create_stars(x_bound, y_bound):
+    """
+    Description: Create 10,000 stars that will serve as the background for the
+                 main screen.
+    Parameters:
+        x_bound [tuple] -> A tuple that contains the range of x-coords to render
+                           stars between
+        y_bound [tuple] -> A tuple that contains the range of y-coords to render
+                           stars between
+    Returns: [list] -> The complete list of stars to render
+    """
+    bg_stars = []
+    for i in range(10000):
+        # Coords
+        x = random.randint(*x_bound)
+        y = random.randint(*y_bound)
+        # Moves some stars farther away and brings some closer
+        dist = random.random() + 0.5
+        # Size, based on the distance
+        size = 1.5*dist + random.random()
+        # Which corner of the circle to render (creats a more interesting shape)
+        corner = random.randint(1, 4)
+
+        bg_stars.append({'pos': [x, y], 'dist': dist, 'size': size, 'corner': corner})
+    
+
+    return bg_stars
+
 def render_bg(bg_stars, bg_sprites):
     """
     Description: Render a faux starscape.
@@ -131,6 +159,8 @@ def main():
     # Audio
     ui_channel = pyg.mixer.find_channel()
     soundtrack_channel = pyg.mixer.find_channel()
+    music_volume = 1
+    sound_volume = 1
 
     # full_menu is an object that is used for Earth's menu
     full_menu = FullMenu(ui_channel)
@@ -142,19 +172,7 @@ def main():
     hud = HUD()
 
     # Create the background star effect
-    bg_stars = []
-    for i in range(10000):
-        # Coords
-        x = random.randint(-WIDTH, 2 * WIDTH)
-        y = random.randint(-HEIGHT, 2 * HEIGHT)
-        # Moves some stars farther away and brings some closer
-        dist = random.random() + 0.5
-        # Size, based on the distance
-        size = 1.5*dist + random.random()
-        # Which corner of the circle to render (creats a more interesting shape)
-        corner = random.randint(1, 4)
-
-        bg_stars.append({'pos': [x, y], 'dist': dist, 'size': size, 'corner': corner})
+    bg_stars = create_stars((-WIDTH, 2*WIDTH), (-HEIGHT, 2*HEIGHT))
 
     # This is for everything that is part of the background but isn't a star
     bg_sprites = []
@@ -163,6 +181,8 @@ def main():
     done_scrolling = True
     is_paused = False
     got_payday = False
+    scroll_music = False
+    scroll_sound = False
 
     # Timekeeping
     clock = pyg.time.Clock()
@@ -201,8 +221,18 @@ def main():
                 elif event.type == pyg.MOUSEBUTTONDOWN:
                     ui_channel.queue(audio['down_click'])
 
+                    # Start moving the music slider
+                    if hud.p_page == None:
+                        if hud.p_eq_music_knob.collidepoint(event.pos):
+                            scroll_music = True
+                        if hud.p_eq_sound_knob.collidepoint(event.pos):
+                            scroll_sound = True
+
                 elif event.type == pyg.MOUSEBUTTONUP:
                     ui_channel.queue(audio['up_click'])
+
+                    scroll_music = False
+                    scroll_sound = False
 
                     # Main menu navigation
                     if hud.p_page == None:
@@ -223,6 +253,37 @@ def main():
 
                         elif hud.p_exit_rect.collidepoint(event.pos):
                             terminate()
+
+            m_pos = pyg.mouse.get_pos()
+            m_rel = pyg.mouse.get_rel()
+            
+            # Update EQ outisde event loop so we can track mouse position easier
+            if scroll_music:
+                # Update knob position but only if the mouse is inline with the slider
+                if hud.p_eq_music_rect.x < m_pos[0] < hud.p_eq_music_rect.right:
+                    hud.p_eq_music_knob.centerx += m_rel[0]
+
+                # Limit knob to stay on the slider
+                # Inflate becuase the volume is based on the center, but clamping
+                # is based on the edges of the rect
+                hud.p_eq_music_knob.clamp_ip(hud.p_eq_music_rect.inflate(hud.p_eq_music_knob.width, 0))
+
+            if scroll_sound:
+                # Update knob position but only if the mouse is inline with the slider
+                if hud.p_eq_sound_rect.x < m_pos[0] < hud.p_eq_sound_rect.right:
+                    hud.p_eq_sound_knob.centerx += m_rel[0]
+
+                # Limit knob to stay on the slider
+                # Inflate becuase the volume is based on the center, but clamping
+                # is based on the edges of the rect
+                hud.p_eq_sound_knob.clamp_ip(hud.p_eq_sound_rect.inflate(hud.p_eq_sound_knob.width, 0))
+            
+            # After moving the knobs, set the volume
+            music_volume = (hud.p_eq_music_knob.centerx-hud.p_eq_music_rect.x) / hud.p_eq_music_rect.width
+            sound_volume = (hud.p_eq_sound_knob.centerx-hud.p_eq_sound_rect.x) / hud.p_eq_sound_rect.width
+
+            ui_channel.set_volume(sound_volume)
+            soundtrack_channel.set_volume(music_volume)
 
             # Rendering
             window.fill(colors['space'])

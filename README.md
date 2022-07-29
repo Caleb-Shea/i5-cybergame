@@ -4,6 +4,7 @@ A wargame simulation made by the i5 cyber element, with inspiration from the i5 
 ## Contributers:
 - Michaela Kovalsky (Project Manager)
 - Caleb Shea (Development Lead)
+- Casey Landrum (Content, QA)
 - ??? (Quality Analysis Tester)
 - ??? (Graphic Designer)
 - ??? (Content Creator)

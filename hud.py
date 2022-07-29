@@ -105,6 +105,7 @@ class HUD():
         # Render the credits themselves
         credits = ['Michaela Kovalsky (Project Manager)',
                    'Caleb Shea (Development Lead)',
+                   'Casey Landrum (Content, QA)',
                    '??? (Quality Analysis Tester)',
                    '??? (Graphic Designer)',
                    '??? (Content Creator)',
@@ -125,6 +126,26 @@ class HUD():
         self.p_gi.fill(colors['black'])
         self.p_gi_rect = self.p_gi.get_rect(center=(self.WIDTH/2, self.HEIGHT/2))
 
+        # EQ
+        # Music slider
+        self.p_eq_music_rect = pyg.rect.Rect(0, 0, 200, 30)
+        self.p_eq_music_rect.center = (self.p_eq_rect.centerx,
+                                       self.p_eq_rect.y + 120)
+        self.p_eq_music_knob = pyg.rect.Rect(0, 0, 20, 20)
+        self.p_eq_music_knob.midright = self.p_eq_music_rect.midright
+
+        m_text = fonts['zrnic20'].render('Music Volume', True, colors['black'])
+        self.p_eq.blit(m_text, m_text.get_rect(topleft=(20, 80)))
+        
+        # Sound slider
+        self.p_eq_sound_rect = pyg.rect.Rect(0, 0, 200, 30)
+        self.p_eq_sound_rect.center = (self.p_eq_rect.centerx,
+                                       self.p_eq_rect.y + 200)
+        self.p_eq_sound_knob = pyg.rect.Rect(0, 0, 20, 20)
+        self.p_eq_sound_knob.midright = self.p_eq_sound_rect.midright
+        s_text = fonts['zrnic20'].render('Sound Volume', True, colors['black'])
+        self.p_eq.blit(s_text, s_text.get_rect(topleft=(20, 160)))
+                                    
         # --- Vignette init ---
         # Left side
         vig1_points = [(0, 0), (0, self.HEIGHT), (self.WIDTH//3, self.HEIGHT),
@@ -366,6 +387,23 @@ class HUD():
             self.window.blit(self.p_options, self.p_options_rect)
             self.window.blit(self.p_info, self.p_info_rect)
             self.window.blit(self.p_exit, self.p_exit_rect)
+
+            # EQ
+            pyg.draw.line(self.window, colors['black'],
+                          self.p_eq_music_rect.midleft,
+                          self.p_eq_music_rect.midright, 3)
+            
+            pyg.draw.circle(self.window, colors['blue'],
+                            self.p_eq_music_knob.center,
+                            self.p_eq_music_knob.width/2)
+            
+            pyg.draw.line(self.window, colors['black'],
+                          self.p_eq_sound_rect.midleft,
+                          self.p_eq_sound_rect.midright, 3)
+            
+            pyg.draw.circle(self.window, colors['blue'],
+                            self.p_eq_sound_knob.center,
+                            self.p_eq_sound_knob.width/2)
 
         elif self.p_page == 'credits':
             # Credits screen
