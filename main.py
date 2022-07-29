@@ -184,6 +184,7 @@ def main():
     scroll_music = False
     scroll_sound = False
 
+
     # Timekeeping
     clock = pyg.time.Clock()
     FPS = 60
@@ -252,6 +253,12 @@ def main():
                             hud.p_page = 'info'
 
                         elif hud.p_exit_rect.collidepoint(event.pos):
+                            hud.p_page = 'exit'
+
+                    elif hud.p_page == 'options':
+                        ...
+                    elif hud.p_page == 'exit':
+                        if hud.p_exit_yes_rect.collidepoint(event.pos):
                             terminate()
 
             m_pos = pyg.mouse.get_pos()
@@ -260,7 +267,7 @@ def main():
             # Update EQ outisde event loop so we can track mouse position easier
             if scroll_music:
                 # Update knob position but only if the mouse is inline with the slider
-                if hud.p_eq_music_rect.x < m_pos[0] < hud.p_eq_music_rect.right:
+                if (hud.p_eq_music_rect.x+m_rel[0]) < m_pos[0] < (hud.p_eq_music_rect.right+m_rel[0]):
                     hud.p_eq_music_knob.centerx += m_rel[0]
 
                 # Limit knob to stay on the slider
@@ -270,7 +277,7 @@ def main():
 
             if scroll_sound:
                 # Update knob position but only if the mouse is inline with the slider
-                if hud.p_eq_sound_rect.x < m_pos[0] < hud.p_eq_sound_rect.right:
+                if (hud.p_eq_sound_rect.x+m_rel[0]) < m_pos[0] < (hud.p_eq_sound_rect.right+m_rel[0]):
                     hud.p_eq_sound_knob.centerx += m_rel[0]
 
                 # Limit knob to stay on the slider

@@ -119,12 +119,12 @@ class HUD():
         # Options
         self.p_o = pyg.Surface((650, 600)).convert_alpha()
         self.p_o.fill(colors['starwhite'])
-        self.p_o_rect = self.p_o.get_rect(center=(self.WIDTH/2, self.HEIGHT/2))
+        self.p_o_rect = self.p_o.get_rect(center=self.window_rect.center)
 
         # Game Info/Stats
         self.p_gi = pyg.Surface((650, 600)).convert_alpha()
         self.p_gi.fill(colors['black'])
-        self.p_gi_rect = self.p_gi.get_rect(center=(self.WIDTH/2, self.HEIGHT/2))
+        self.p_gi_rect = self.p_gi.get_rect(center=self.window_rect.center)
 
         # EQ
         # Music slider
@@ -145,6 +145,19 @@ class HUD():
         self.p_eq_sound_knob.midright = self.p_eq_sound_rect.midright
         s_text = fonts['zrnic20'].render('Sound Volume', True, colors['black'])
         self.p_eq.blit(s_text, s_text.get_rect(topleft=(20, 160)))
+
+        # Exit
+        self.p_exit_confirm = pyg.Surface((800, 350))
+        self.p_exit_confirm.fill(colors['ppl_bg'])
+        self.p_exit_confirm_rect = self.p_exit_confirm.get_rect(center=self.window_rect.center)
+        text = fonts['zrnic42'].render('Are you sure you want to quit?', True, colors['black'])
+        self.p_exit_confirm.blit(text, text.get_rect(center=(400, 65)))
+
+        self.p_exit_yes = pyg.Surface((200, 80))
+        self.p_exit_yes.fill(colors['sand'])
+        self.p_exit_yes_rect = self.p_exit_yes.get_rect(midtop=self.window_rect.center)
+        text = fonts['zrnic30'].render("Yes I'm sure", True, colors['black'])
+        self.p_exit_yes.blit(text, text.get_rect(center=(100, 40)))
                                     
         # --- Vignette init ---
         # Left side
@@ -416,3 +429,8 @@ class HUD():
         elif self.p_page == 'info':
             # General game info screen
             self.window.blit(self.p_gi, self.p_gi_rect)
+        
+        elif self.p_page == 'exit':
+            # Exit confirmation message
+            self.window.blit(self.p_exit_confirm, self.p_exit_confirm_rect)
+            self.window.blit(self.p_exit_yes, self.p_exit_yes_rect)
