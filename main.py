@@ -10,7 +10,6 @@ import datetime as dt
 import pygame as pyg
 import random
 import math
-import os
 
 from earth_system import EarthSystem
 from game_info import game_info
@@ -325,9 +324,9 @@ def main():
 
                 # Testing purposes
                 elif event.key == pyg.K_SPACE:
-                    game_info['cash'] += 900000000000000
-                    game_info['reputation'] += 20
-                    game_info['num_personnel'] += 200
+                    game_info['Cash'] += 900000000000000
+                    game_info['Reputation'] += 20
+                    game_info['Num Personnel'] += 200
                     game_info['Staff Assignments']['Unassigned'] += 100
                     game_info['Staff Assignments']['Cyber'] += 50
                     game_info['Staff Assignments']['Intel'] += 20
@@ -452,8 +451,8 @@ def main():
 
         # Payday is the first of every month
         if date.day == 1 and not got_payday:
-            game_info['budget'] = 1000000 * game_info['reputation'] + 250000 * game_info['num_sats']
-            game_info['cash'] += game_info['budget']
+            game_info['Budget'] = 1000000 * game_info['Reputation'] + 250000 * game_info['Num Sats']
+            game_info['Cash'] += game_info['Budget']
             got_payday = True
         # Reset tracker
         elif date.day == 2:

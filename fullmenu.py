@@ -302,11 +302,11 @@ class FullMenu():
                     if self.acq_button_rect.move(10, 10).collidepoint(m_pos):
                         new_sat = self.sats[self.selected_sat]
                         # If we have the money, purchase the satellite
-                        if game_info['cash'] >= new_sat['money_cost']:
-                            game_info['num_sats'] += 1
+                        if game_info['Cash'] >= new_sat['money_cost']:
+                            game_info['Num Sats'] += 1
                             game_info[f'Acq {new_sat["name"]} Level'] += 1
-                            game_info['cash'] -= new_sat['money_cost']
-                            game_info['sats_owned'].append(new_sat)
+                            game_info['Cash'] -= new_sat['money_cost']
+                            game_info['Sats Owned'].append(new_sat)
 
                             new_sat['money_cost'] = int(round(new_sat['money_cost'] * 1.15, -1))
                         else:
@@ -402,8 +402,8 @@ class FullMenu():
             # Upgrade defensive capabilities
             self.cyber_def_level += 1
             game_info['Cyber Def Level'] += 1
-            game_info['reputation'] += self.cyber_def_rep_increase
-            game_info['cash'] -= self.cyber_def_level_cost
+            game_info['Reputation'] += self.cyber_def_rep_increase
+            game_info['Cash'] -= self.cyber_def_level_cost
 
             # Choose a random attribute to level up
             attr = random.choice(list(self.cyber_attr.keys()))
@@ -419,14 +419,14 @@ class FullMenu():
             if self.cyber_inflate_def_up:
                 if self.cyber_def_up_rect.inflate(80, 60).move(10, -20).collidepoint(m_pos):
                     # And has the available resources
-                    if game_info['cash'] >= self.cyber_def_level_cost:
+                    if game_info['Cash'] >= self.cyber_def_level_cost:
                         upgrade_random_attr()
                     else:
                         self.ui_channel.play(audio['ui_error'])
             else:
                 if self.cyber_def_up_rect.collidepoint(m_pos):
                     # And has the available resources
-                    if game_info['cash'] >= self.cyber_def_level_cost:
+                    if game_info['Cash'] >= self.cyber_def_level_cost:
                         upgrade_random_attr()
                     else:
                         self.ui_channel.play(audio['ui_error'])
@@ -580,7 +580,7 @@ class FullMenu():
             job_color = colors[f'ppl_legend_{job}']
 
             # Calculate the width of the segment that represents one job
-            width = game_info['Staff Assignments'][job]/game_info['num_personnel']*self.ppl_bar_rect.width
+            width = game_info['Staff Assignments'][job]/game_info['Num Personnel']*self.ppl_bar_rect.width
 
             # Add 2 to the width to prevent round-error gaps between bars
             rect = pyg.rect.Rect(start_x, 0, width + 2, self.ppl_bar_rect.height)

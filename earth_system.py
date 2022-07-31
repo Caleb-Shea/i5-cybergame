@@ -154,7 +154,7 @@ class EarthSystem():
 
         # --- Satellite management ---
         # Add new sats if necessary
-        while len(self.sats) < game_info['num_sats']:
+        while len(self.sats) < game_info['Num Sats']:
             # Name each individual satellite based on what type we're missing
             sat_names = ['GPS', 'ABD', 'SPI', 'MDef', 'ABCDE', 'IROOI', 'ICBM', 'B.O.L.L.S.', 'Nukes']
             for n in sat_names:

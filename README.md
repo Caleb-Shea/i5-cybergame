@@ -51,13 +51,13 @@ A wargame simulation made by the i5 cyber element, with inspiration from the i5 
 - __EMenu:__ Move earth to the left when closing earth vignette
 - __FullMenu:__ Add ability for newline characters in acquisitions tab descriptions
 - Change Acquitions/Cyber tab to use surfaces
+- __FullMenu:__ Add support for larger displays (use percentages rather than absolutes)
 - Round/square-off corners of rects
 - Only render objects that are on screen
 - Add ability to click on ticker to open events menu
 - Easter eggs/Achievements
 
 ### Known bugs:
-- __FullMenu:__ On bigger screens, the border is offset
 - Pressing a key will sometimes stop the next mouse click from being registered
 
 ## Credits:

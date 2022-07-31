@@ -240,7 +240,7 @@ class HUD():
         Returns: None
         """
         # Create an object specifially for the text that will be rendered
-        img = fonts['zrnic24'].render(f"Reputation: {game_info['reputation']:,}", True, colors['starwhite'])
+        img = fonts['zrnic24'].render(f"Reputation: {game_info['Reputation']:,}", True, colors['starwhite'])
         rect = img.get_rect()
         rect.bottomright = (self.WIDTH - 7, self.HEIGHT - 46)
 
@@ -263,7 +263,7 @@ class HUD():
         Returns: None
         """
         # Create an object specifially for the text that will be rendered
-        img = fonts['zrnic24'].render(f"Cash: {game_info['cash']:,}", True, colors['starwhite'])
+        img = fonts['zrnic24'].render(f"Cash: {game_info['Cash']:,}", True, colors['starwhite'])
         rect = img.get_rect()
         rect.bottomright = (self.WIDTH - 7, self.HEIGHT - 86)
 
@@ -286,7 +286,7 @@ class HUD():
         Returns: None
         """
         # Create an object specifially for the text that will be rendered
-        img = fonts['zrnic24'].render(f"Total Personnel: {game_info['num_personnel']:,}", True, colors['starwhite'])
+        img = fonts['zrnic24'].render(f"Total Personnel: {game_info['Num Personnel']:,}", True, colors['starwhite'])
         rect = img.get_rect()
         rect.bottomright = (self.WIDTH - 7, self.HEIGHT - 126)
 
@@ -328,37 +328,37 @@ class HUD():
 
         # --- Stats ---
         # Budget
-        img = fonts['zrnic26'].render(f"- Budget: {game_info['budget']:,}", True, colors['starwhite'])
+        img = fonts['zrnic26'].render(f"- Budget: {game_info['Budget']:,}", True, colors['starwhite'])
         rect = img.get_rect()
         rect.topleft = (50, 70)
         self.window.blit(img, rect)
 
         # Num Satellites
-        img = fonts['zrnic26'].render(f"- Num Satellites: {game_info['num_sats']:,}", True, colors['starwhite'])
+        img = fonts['zrnic26'].render(f"- Num Satellites: {game_info['Num Sats']:,}", True, colors['starwhite'])
         rect = img.get_rect()
         rect.topleft = (50, 100)
         self.window.blit(img, rect)
 
         # Num Personnel
-        img = fonts['zrnic26'].render(f"- Num Personnel: {game_info['num_personnel']:,}", True, colors['starwhite'])
+        img = fonts['zrnic26'].render(f"- Num Personnel: {game_info['Num Personnel']:,}", True, colors['starwhite'])
         rect = img.get_rect()
         rect.topleft = (50, 130)
         self.window.blit(img, rect)
 
         # Max Budget
-        img = fonts['zrnic26'].render(f"- Max Budget: {game_info['max_budget']:,}", True, colors['starwhite'])
+        img = fonts['zrnic26'].render(f"- Max Budget: {game_info['Max Budget']:,}", True, colors['starwhite'])
         rect = img.get_rect()
         rect.topleft = (50, 160)
         self.window.blit(img, rect)
 
         # Total Cash
-        img = fonts['zrnic26'].render(f"- Total Cash Earned: {game_info['total_cash']:,}", True, colors['starwhite'])
+        img = fonts['zrnic26'].render(f"- Total Cash Earned: {game_info['Total Cash']:,}", True, colors['starwhite'])
         rect = img.get_rect()
         rect.topleft = (50, 190)
         self.window.blit(img, rect)
 
         # Max Personnel
-        img = fonts['zrnic26'].render(f"- Max Personnel: {game_info['max_personnel']:,}", True, colors['starwhite'])
+        img = fonts['zrnic26'].render(f"- Max Personnel: {game_info['Max Personnel']:,}", True, colors['starwhite'])
         rect = img.get_rect()
         rect.topleft = (50, 220)
         self.window.blit(img, rect)
