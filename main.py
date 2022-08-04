@@ -258,6 +258,7 @@ def main():
 
                     elif hud.p_page == 'options':
                         ...
+
                     elif hud.p_page == 'exit':
                         if hud.p_exit_yes_rect.collidepoint(event.pos):
                             terminate()
@@ -294,17 +295,24 @@ def main():
             soundtrack_channel.set_volume(music_volume)
 
             # Rendering
-            window.fill(colors['space'])
-            render_bg(bg_stars, bg_sprites)
+            if gamefield == None:
+                window.fill(colors['space'])
+                render_bg(bg_stars, bg_sprites)
 
-            earth_sys.spin()
-            earth_sys.render()
+                earth_sys.spin()
+                earth_sys.render()
 
-            # Render essential hud elements
-            hud.render_time(date)
-            hud.render_reputation()
-            hud.render_cash()
-            hud.ticker.render()
+                # Render essential hud elements
+                hud.render_time(date)
+                hud.render_personnel()
+                hud.render_cash()
+                hud.render_reputation()
+                hud.ticker.render()
+            
+            else: # If there is a gamefield active
+                window.fill(colors['black'])
+
+                gamefield.render()
 
             hud.render_pause_menu()
 
