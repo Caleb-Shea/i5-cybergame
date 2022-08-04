@@ -115,11 +115,7 @@ class FullMenu():
         self.ops_map.blit(images['world_map_big'], (0, 0))
 
         self.ops_map_targets = []
-        self.ops_map_hitlist = [(200, 260), (360, 250), # North America
-                                (335, 480), (380, 370), # South America
-                                (565, 225), # Europe
-                                (650, 340), # Africa
-                                (690, 235), (820, 315), (1000, 255)] # Asia
+        self.ops_map_hitlist = list(fullmenu_data.loc_coords.values())
 
         # --- Personnel tab ---
         self.ppl_bg_rect = pyg.rect.Rect(5, 50, 1250, 645)
@@ -530,7 +526,8 @@ class FullMenu():
         Returns: None
         """
         if button == 3:
-            self.ops_map_targets.append(random.choice(self.ops_map_hitlist))
+            if len(self.ops_map_hitlist) > 0:
+                self.ops_map_targets.append(self.ops_map_hitlist.pop(0))
 
     def render_ops(self):
         """

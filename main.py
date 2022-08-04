@@ -12,6 +12,7 @@ import random
 import math
 
 from earth_system import EarthSystem
+from ops import Mission, GameField
 from game_info import game_info
 from fullmenu import FullMenu
 from helper_func import *
@@ -43,7 +44,6 @@ def create_stars(x_bound, y_bound):
         corner = random.randint(1, 4)
 
         bg_stars.append({'pos': [x, y], 'dist': dist, 'size': size, 'corner': corner})
-    
 
     return bg_stars
 
@@ -170,6 +170,9 @@ def main():
     # The HUD
     hud = HUD()
 
+    # The gamefield is where the player plays the actual game
+    gamefield = None
+
     # Create the background star effect
     bg_stars = create_stars((-WIDTH, 2*WIDTH), (-HEIGHT, 2*HEIGHT))
 
@@ -182,7 +185,6 @@ def main():
     got_payday = False
     scroll_music = False
     scroll_sound = False
-
 
     # Timekeeping
     clock = pyg.time.Clock()
@@ -322,6 +324,10 @@ def main():
                 if event.key == pyg.K_BACKQUOTE:
                     terminate()
 
+                # Scroll to the earth
+                elif event.key == pyg.K_e:
+                    done_scrolling = False
+
                 # Testing purposes
                 elif event.key == pyg.K_SPACE:
                     game_info['Cash'] += 900000000000000
@@ -332,10 +338,9 @@ def main():
                     game_info['Staff Assignments']['Intel'] += 20
                     game_info['Staff Assignments']['Ops'] += 30
                     game_info['Staff Assignments']['Acquisitions'] += 10
-
-                # Scroll to the earth
-                elif event.key == pyg.K_e:
-                    done_scrolling = False
+                
+                elif event.key == pyg.K_m:
+                    gamefield = GameField(Mission('VENDETTA'))
 
             elif event.type == pyg.KEYUP:
                 if event.key == pyg.K_ESCAPE:
@@ -390,6 +395,20 @@ def main():
         event_keys = pyg.key.get_pressed()
         m_pressed = pyg.mouse.get_pressed()
         m_rel = pyg.mouse.get_rel()
+
+        # If we have an ongoing mission, we only need to render the mission
+        if gamefield != None:
+            window.fill(colors['black'])
+            gamefield.update(m_rel)
+            gamefield.render()
+
+            # Push rendering
+            pyg.display.flip()
+            clock.tick(FPS)
+
+            # Don't run the rest of the code
+            continue
+
         # Move all the nodes/stars if the mouse is dragged
         if m_pressed[0] and full_menu.cur_tab == None:
             for node in earth_sys.nodes.values(): # Move nodes
@@ -437,6 +456,12 @@ def main():
             # Cancel scroll if we click
             if m_pressed[0] and (m_rel[0]>0 or m_rel[1]>0):
                 done_scrolling = True
+        
+        # If we click on an available operation, embark on it
+        #                                                        VERY TEMPORARY
+        if (650, 340) in full_menu.ops_map_targets:
+            if m_pressed[0]:
+                gamefield = GameField(Mission('VENDETTA'))
 
         # Update the shooting stars
         for sprite in bg_sprites:

@@ -91,8 +91,8 @@ class Ticker():
             # Get the new event, remove it from the list of available events and
             # add it to the list of seen events
             self.cur_event = random.choice(available_events)
-            self.used_events.append(self.cur_event)
             self.unused_events.remove(self.cur_event)
+            self.used_events.append(self.cur_event)
 
             # Get a timestamp for which day the user first saw the event
             self.cur_event['Date Seen'] = date
@@ -112,16 +112,6 @@ class Ticker():
         """
         ...
 
-    def render_event(self):
-        """
-        Description: Render the current event.
-        Parameters: None
-        Returns: None
-        """
-        if self.cur_event != None:
-            self.event_rect.midleft = (93, self.rect.height//2)
-            self.image.blit(self.event_text, self.event_rect)
-
     def render(self):
         """
         Description: Render the ticker onto the screen.
@@ -131,7 +121,10 @@ class Ticker():
         # Clear the image of anything tab specific so objects don't persist
         self.image = self.image_base.copy()
 
-        self.render_event()
+        # Render the current event
+        if self.cur_event != None:
+            self.event_rect.midleft = (93, self.rect.height//2)
+            self.image.blit(self.event_text, self.event_rect)
 
         # Blit to the screen
         self.window.blit(self.image, self.rect)
