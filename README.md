@@ -28,7 +28,8 @@ A wargame simulation made by the i5 cyber element, with inspiration from the i5 
 ### General:
 - `pygame.sprite.LayeredUpdates()` is a thing. At some point this might be helpful
 - `pyg.Surface.fill()` is hardware accelerated. Maybe switch?
-- Compile with [PyInstaller](https://pyinstaller.org/en/stable/) or [Nuitka](https://nuitka.net/doc/user-manual.html)
+- Compile with [PyInstaller](https://pyinstaller.org/en/stable/)
+  - `pyinstaller --add-data "assets;assets" --add-data "ticker_events.csv;." --add-data "ops_data.csv;." main.py`
 
 ### Materials needed:
 |Content|Approx Quantity|
@@ -52,13 +53,12 @@ A wargame simulation made by the i5 cyber element, with inspiration from the i5 
 - __FullMenu:__ Add ability for newline characters in acquisitions tab descriptions
 - Change Acquitions/Cyber tab to use surfaces
 - __FullMenu:__ Add support for larger displays (use percentages rather than absolutes)
-- Round/square-off corners of rects
-- Only render objects that are on screen
 - Add ability to click on ticker to open events menu
 - Easter eggs/Achievements
 
 ### Known bugs:
 - Pressing a key will sometimes stop the next mouse click from being registered
+- The EQ in the pause menu doesn't actually work lol
 
 ## Credits:
 - https://freesound.org/people/EminYILDIRIM/sounds/536108/
