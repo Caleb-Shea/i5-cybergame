@@ -20,9 +20,18 @@ class EarthSystem():
         # Init objects
         self.nodes = {}
 
-        earth = pyg.Surface((130, 130)).convert_alpha()
+        earth = pyg.Surface((100, 100)).convert_alpha()
         earth.fill(colors['clear'])
-        pyg.draw.circle(earth, colors['white'], (65, 65), 65)
+        # Get the spritesheet for earth
+        self.earthss = images['earth_ss']
+        self.earthss_cur = 0
+        self.earthss_rects = []
+        for j in range(4):
+            for i in range(12):
+                x = i * 100
+                y = j * 100
+                self.earthss_rects.append(pyg.rect.Rect(x, y, 100, 100))
+
         self.nodes['EARTH'] = {'name': 'EARTH', 'surf': earth,
                                'rect': earth.get_rect(), 'desc': 'Home sweet home'}
         acq = pyg.Surface((100, 100)).convert_alpha()
@@ -56,7 +65,7 @@ class EarthSystem():
                                    'rect': ppl.get_rect(), 'desc': 'Buy people.',
                                    'dist': 130, 'theta': 10*math.pi/5}
 
-        # A satellite is anything orbiting the earth but isn't connected to it
+        # A satellite is anything orbiting the earth but isn't connected grphically
         self.sats = []
 
         # Init trackers
@@ -65,18 +74,6 @@ class EarthSystem():
 
         # Set initial positions
         self.nodes['EARTH']['rect'].center = self.window.get_rect().center
-        """
-        # Load images
-        # Get the spritesheet for earth
-        if self.data['name'] == 'EARTH':
-            self.ss = images['earth_ss']
-            self.ss_cur = 0
-            self.ss_rects = []
-            for j in range(4):
-                for i in range(12):
-                    x = i * 100
-                    y = j * 100
-                    self.ss_rects.append(pyg.rect.Rect(x, y, 100, 100))"""
 
     def get_hovered(self):
         """
@@ -180,6 +177,11 @@ class EarthSystem():
             new_sat = {'name': name, 'surf': surf, 'rect': surf.get_rect(), 'dist': dist,
                        'theta': theta}
             self.sats.append(new_sat)
+        
+        # Update images that are based on spritesheets
+        self.earthss_cur += 0.3
+        rect = self.earthss_rects[int(self.earthss_cur%len(self.earthss_rects))]
+        self.nodes['EARTH']['surf'].blit(self.earthss, (0, 0), rect)
 
         # Spin nodes and sats
         self.spin()
@@ -213,6 +215,7 @@ class EarthSystem():
                 f = fonts['zrnic24']
             else:
                 f = fonts['zrnic18']
+
             name = f.render(node['name'], True, colors['black'])
             self.window.blit(name, name.get_rect(center=node['rect'].center))
 
