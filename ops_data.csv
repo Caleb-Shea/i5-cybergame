@@ -1,2 +1,2 @@
-name,loc,cost,rec_assets,game_area,target_pos,start_pos,friendlies,hostiles
-VENDETTA,NW Africa,None,None,20x10,18x2,6x7,ground:6x7|ground:2x9|air:3x4|air:4x4,ground:18x9|jam:8x4x6x5|air:16x8
+name,loc,type,cost,rec_assets,game_area
+TEST,NW Africa,elim,None,None,22x14

@@ -11,8 +11,8 @@ import pygame as pyg
 import random
 import math
 
+from ops import MissionData, GameField
 from earth_system import EarthSystem
-from ops import Mission, GameField
 from game_info import game_info
 from fullmenu import FullMenu
 from helper_func import *
@@ -348,7 +348,7 @@ def main():
                     game_info['Staff Assignments']['Acquisitions'] += 10
                 
                 elif event.key == pyg.K_m:
-                    gamefield = GameField(Mission('VENDETTA'))
+                    gamefield = GameField(MissionData('TEST'))
 
             elif event.type == pyg.KEYUP:
                 if event.key == pyg.K_ESCAPE:
@@ -469,7 +469,7 @@ def main():
         #                                                        VERY TEMPORARY
         if (650, 340) in full_menu.ops_map_targets:
             if m_pressed[0]:
-                gamefield = GameField(Mission('VENDETTA'))
+                gamefield = GameField(MissionData('TEST'))
 
         # Update the shooting stars
         for sprite in bg_sprites:
@@ -533,6 +533,7 @@ def main():
 if __name__ == '__main__':
     # Initalize pygame and create a window
     pyg.init()
+    pyg.display.set_icon(images['GPS'])
     pyg.display.set_caption("i5 CYBERGAME")
     pyg.display.set_mode(flags=pyg.HWSURFACE | pyg.FULLSCREEN | pyg.DOUBLEBUF)
 

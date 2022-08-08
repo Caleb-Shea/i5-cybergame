@@ -10,6 +10,7 @@ game_info = {
         'Unassigned': 30
     },
     'Reputation': 0,
+    'Game Score': 0,
     'Num Sats': 0,
     'Sats Owned': [],
     'Max Budget': 0,
@@ -27,5 +28,9 @@ game_info = {
     'Acq ICBM Level': 0,
     'Acq B.O.L.L.S. Level': 0,
     'Acq Nukes Level': 0,
-    'Reels Seen': []
+    'Reels Seen': [],
+    'Ground Killed': 0,
+    'Air Killed': 0,
+    'Ground KIA': 0,
+    'Air KIA': 0
 }

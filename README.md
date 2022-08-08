@@ -48,10 +48,10 @@ A wargame simulation made by the i5 cyber element, with inspiration from the i5 
 *Could be pseudorandomly generated
 
 ### Todo list:
-- Add interactivity e.g. minigames and/or/like an actual game game
 - __EMenu:__ Move earth to the left when closing earth vignette
 - __FullMenu:__ Add ability for newline characters in acquisitions tab descriptions
 - Change Acquitions/Cyber tab to use surfaces
+- __assets.py:__ Support dynamic loading of resources only when needed
 - __FullMenu:__ Add support for larger displays (use percentages rather than absolutes)
 - Add ability to click on ticker to open events menu
 - Easter eggs/Achievements
