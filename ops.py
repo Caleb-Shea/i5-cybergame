@@ -1,4 +1,5 @@
 import enum
+from numpy import full
 import pygame as pyg
 import random
 import math
@@ -62,6 +63,7 @@ class MissionData():
 
         # 'name' -> The name of the mission
         # 'loc' -> The location of the mission
+        # 'objective' -> The objective(s) of the mission
         # 'cost' -> A dict containing the different resources required to embark
         # 'rec_assets' -> The reccomended amount of assets to bring on the mission
         # 'game_area' -> How much area is needed to be created for the mission
@@ -71,6 +73,8 @@ class MissionData():
         self.full_name = 'OPERATION ' + self.name
 
         self.loc = self.raw_data['loc']
+
+        self.objectives = self.raw_data['objective'].split('|')
 
         self.cost = self.raw_data['cost']
         if self.cost == 'None': self.cost = None
@@ -103,6 +107,12 @@ class MissionData():
                     elif tile in ['49']:
                         type = 'plane'
                         team = 'friendly'
+                    elif tile in ['40', '41', '42', '50', '52', '60', '61', '62']:
+                        type = 'city_border'
+                        team = 'passive'
+                    elif tile in ['43', '51', '53', '63']:
+                        type = 'city'
+                        team = 'passive'
 
                     # '-1' indicates an empty tile, so if we get one of these,
                     # move on to the next tile
@@ -121,11 +131,11 @@ class MissionData():
                         self.layers['space'].append(obj)
                     elif type in ['plane']:
                         self.layers['air'].append(obj)
-                    elif type in ['tank']:
+                    elif type in ['tank', 'city_border', 'city']:
                         self.layers['ground'].append(obj)
 
 class GameField():
-    def __init__(self, mission):
+    def __init__(self, mission, assets):
         """
         Description: A class to represent the gameplay for a certain mission.
                      This class will be responsible for rendering the playing
@@ -134,6 +144,7 @@ class GameField():
         Parameters:
             mission [MissionData()] -> The mission object to use to load and store
                                        mission data in
+            assets [dict] -> The assets the player chooses to bring with them
         Returns: GameField()
         """
         self.window = pyg.display.get_surface()
@@ -143,6 +154,10 @@ class GameField():
         self.image.fill(colors['clear'])
 
         self.mission = mission
+
+        # Trackers
+        self.hovered = None
+        self.selected = None
 
         # Grid size
         # This is always 50, but we use a variable for readability
@@ -156,9 +171,81 @@ class GameField():
         self.scroll_x = 0
         self.scroll_y = 0
 
+        # Set inital positions to be aligned with the grid
         for layer in ['ground', 'air', 'space']:
             for obj in self.mission.layers[layer]:
                 obj['rect'].move_ip(self.topleft[0], self.topleft[1])
+        
+        # --- Player data ---
+        self.p_max_actions = 5
+        self.p_actions = self.p_max_actions
+        self.p_assets = assets
+
+        # --- Enemy data ---
+        ...
+
+        # --- HUD init ---
+        # A list of important coords to render at
+        self.imp_coords = {
+            'name': (self.window_rect.left+120, self.window_rect.bottom-80),
+            'pic': ()
+        }
+
+        # The coords of the area at the bottom of the screen
+        trap_coords = [
+            self.window_rect.bottomleft,
+            self.window_rect.bottomright,
+            (self.window_rect.right-100,self.window_rect.bottom-80),
+            (self.window_rect.left+100,self.window_rect.bottom-80)
+        ]
+        
+        # The coords for the game info at the topleft of the screen
+        info_coords = [
+            self.window_rect.topleft,
+            (self.window_rect.left+310, self.window_rect.top),
+            (self.window_rect.left+255, self.window_rect.top+105),
+            (self.window_rect.left, self.window_rect.top+175)
+        ]
+        
+        # Friendly
+        self.f_hud = pyg.Surface(self.window_rect.size).convert_alpha()
+        self.f_hud.fill(colors['clear'])
+        pyg.draw.polygon(self.f_hud, colors['ops_f_half'], trap_coords)
+
+        # Hostile
+        self.h_hud = pyg.Surface(self.window_rect.size).convert_alpha()
+        self.h_hud.fill(colors['clear'])
+        pyg.draw.polygon(self.h_hud, colors['ops_h_half'], trap_coords)
+
+        # Passive
+        self.p_hud = pyg.Surface(self.window_rect.size).convert_alpha()
+        self.p_hud.fill(colors['clear'])
+        pyg.draw.polygon(self.p_hud, colors['ops_p_half'], trap_coords)
+
+        # Game info
+        self.info_hud = pyg.Surface(self.window_rect.size).convert_alpha()
+        self.info_hud.fill(colors['clear'])
+        pyg.draw.polygon(self.info_hud, colors['ops_f_half'], info_coords)
+        
+        # Label text
+        text = fonts['zrnic42'].render('OBJECTIVES', True, colors['starwhite'])
+        text = pyg.transform.rotate(text, 15.8)      
+        self.info_hud.blit(text, (5, 77))
+
+        # Render objectives
+        for y, item in enumerate(self.mission.objectives):
+            # Check boxes
+            box = pyg.rect.Rect(8, 8+30*y, 20, 20)
+            pyg.draw.rect(self.info_hud, colors['starwhite'], box, 3)
+            
+            # Objective text
+            if item == 'elim': fulltext = 'Eliminate all enemy forces'
+            elif item == '0loss': fulltext = 'Have 0 casulties'
+            elif item.endswith('loss'): fulltext = f'Have less than {item.split("loss")[0]} casulties'
+            elif item == 'savecivs': fulltext = 'Save all civilians'
+
+            text = fonts['zrnic20'].render(fulltext, True, colors['starwhite'])
+            self.info_hud.blit(text, box.move(26, -2))
 
     def update(self, m_rel):
         """
@@ -178,28 +265,41 @@ class GameField():
             self.scroll_x += m_rel[0]
             self.scroll_y += m_rel[1]
         
-        # Limit scrolling so half of the grid stays on screen always
-        self.scroll_x = max(self.scroll_x, -self.window_rect.width)
-        self.scroll_x = min(self.scroll_x, self.window_rect.width)
+        # Limit scrolling so we don't lose the grid
+        self.scroll_x = max(self.scroll_x, -self.window_rect.width/1.5)
+        self.scroll_x = min(self.scroll_x, self.window_rect.width/1.5)
 
-        self.scroll_y = max(self.scroll_y, -self.window_rect.height)
-        self.scroll_y = min(self.scroll_y, self.window_rect.height)
+        self.scroll_y = max(self.scroll_y, -self.window_rect.height/1.5)
+        self.scroll_y = min(self.scroll_y, self.window_rect.height/1.5)
 
         # Update draw coords
         for layer in ['ground', 'air', 'space']:
             for obj in self.mission.layers[layer]:
                 obj['d_rect'] = obj['rect'].move(self.scroll_x, self.scroll_y)
-       
+
         # Check if the mouse is hovering over any object
         # Combine all the layers so we only need one for loop
         objs = self.mission.layers['space'] + self.mission.layers['air'] + self.mission.layers['ground']
+        
+        # We don't want to render hud sections for city borders
+        objs = [i for i in objs if i['type'] != 'city_border']
+
         for obj in objs:
             if obj['d_rect'].collidepoint(m_pos):
                 self.hovered = obj
                 break
         else:
             self.hovered = None
-
+        
+        # Check if we clicked on something
+        if m_pressed[0]:
+            for obj in objs:
+                if obj['d_rect'].collidepoint(m_pos):
+                    self.selected = obj
+                    break
+            else: # If we didn't break from the loop, deselect
+                self.selected = None
+        
     def render_grid(self):
         """
         Description: Render a grid the size of the game area.
@@ -237,14 +337,50 @@ class GameField():
         Parameters: None
         Returns: None
         """
-        # If we have are hovering over something, render a menu
-        if self.hovered != None:
-            if self.hovered['team'] == 'friendly':
-                color = colors['babyblue']
-            else:
-                color = colors['rose']
+        # Render topleft info screen
+        self.image.blit(self.info_hud, (0, 0))
 
-            pyg.draw.rect(self.image, color, (0, 0, 200, 300))
+        # If we have are hovering over something, render a menu
+        if self.hovered != None and self.selected == None:
+            if self.hovered['team'] == 'friendly':
+                # Draw the main area at the bottom of the screen
+                self.image.blit(self.f_hud, (0, 0))
+
+                # Render the text for the name of the obj
+                name = fonts['zrnic48'].render(self.hovered['type'], True, colors['white'])
+                self.image.blit(name, self.imp_coords['name'])
+
+            elif self.hovered['team'] == 'hostile':
+                # Draw the main area at the bottom of the screen
+                self.image.blit(self.h_hud, (0, 0))
+
+            elif self.hovered['team'] == 'passive':
+                # Draw the main area at the bottom of the screen
+                self.image.blit(self.p_hud, (0, 0))
+        
+        # If we've clicked something, render a menu
+        if self.selected != None:
+            if self.selected['team'] == 'friendly':
+                # Draw the main area at the bottom of the screen
+                self.image.blit(self.f_hud, (0, 0))
+
+                # Render the text for the name of the obj
+                name = fonts['zrnic48'].render(self.selected['type'], True, colors['white'])
+                self.image.blit(name, self.imp_coords['name'])
+
+            elif self.selected['team'] == 'hostile':
+                # Draw the main area at the bottom of the screen
+                self.image.blit(self.h_hud, (0, 0))
+
+            elif self.selected['team'] == 'passive':
+                # Draw the main area at the bottom of the screen
+                self.image.blit(self.p_hud, (0, 0))
+        
+            # If, while we have the select menu open, we hover over a different
+            # object, render a smaller menu over the hover object
+            if self.hovered != None and self.hovered != self.selected:
+                ...
+
 
     def render(self):
         """

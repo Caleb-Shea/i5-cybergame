@@ -1,2 +1,2 @@
-name,loc,type,cost,rec_assets,game_area
-TEST,NW Africa,elim,None,None,22x14
+name,loc,objective,cost,rec_assets,game_area
+TEST,NW Africa,5loss|elim|savecivs,None,None,22x14

@@ -372,7 +372,7 @@ class HUD():
                           satellite, either one works because ~flexibility~
         Returns: None
         """
-        name = fonts['zrnic42'].render(obj['name'], True, colors['white'])
+        name = fonts['zrnic42'].render(obj['name'], True, colors['red'])
         name_rect = name.get_rect(y=5)
         name_rect.centerx=self.WIDTH/2
         self.window.blit(name, name_rect)

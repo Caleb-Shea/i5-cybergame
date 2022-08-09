@@ -348,7 +348,7 @@ def main():
                     game_info['Staff Assignments']['Acquisitions'] += 10
                 
                 elif event.key == pyg.K_m:
-                    gamefield = GameField(MissionData('TEST'))
+                    gamefield = GameField(MissionData('TEST'), None)
 
             elif event.type == pyg.KEYUP:
                 if event.key == pyg.K_ESCAPE:
@@ -469,7 +469,7 @@ def main():
         #                                                        VERY TEMPORARY
         if (650, 340) in full_menu.ops_map_targets:
             if m_pressed[0]:
-                gamefield = GameField(MissionData('TEST'))
+                gamefield = GameField(MissionData('TEST'), None)
 
         # Update the shooting stars
         for sprite in bg_sprites:

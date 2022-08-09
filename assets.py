@@ -39,6 +39,13 @@ colors = {'clear': pyg.Color(  0,   0,   0,   0),
           'ppl_legend_Acquisitions': pyg.Color(  0, 255,   0),
           'ppl_legend_Unassigned': pyg.Color(128,   0, 255),
 
+          'ops_friendly': pyg.Color(140, 190, 240),
+          'ops_f_half': pyg.Color(140, 190, 240, 180),
+          'ops_hostile': pyg.Color(240, 140, 140),
+          'ops_h_half': pyg.Color(240, 140, 140, 180),
+          'ops_passive': pyg.Color(180, 180, 180),
+          'ops_p_half': pyg.Color(180, 180, 180, 180),
+
           'white': pyg.Color(255, 255, 255),
           'starwhite': pyg.Color(230, 230, 230),
           'lightgray': pyg.Color(200, 200, 200),
@@ -84,9 +91,9 @@ fonts = {'zrnic14': Font(get_path(path.join('assets', 'fonts', 'zrnic.ttf')), 14
 
 # Load audio files
 audio = {'up_click': Sound(get_path(path.join('assets', 'audio', 'up_click.wav'))),
-          'down_click': Sound(get_path(path.join('assets', 'audio', 'down_click.wav'))),
-          'soundtrack1': Sound(get_path(path.join('assets', 'audio', 'soundtrack', 'Empty Head.mp3'))),
-          'ui_error': Sound(get_path(path.join('assets', 'audio', 'ui_error.flac')))}
+         'down_click': Sound(get_path(path.join('assets', 'audio', 'down_click.wav'))),
+         'soundtrack1': Sound(get_path(path.join('assets', 'audio', 'soundtrack', 'Empty Head.mp3'))),
+         'ui_error': Sound(get_path(path.join('assets', 'audio', 'ui_error.flac')))}
 
 # Adjust volume levels
 audio['down_click'].set_volume(.75)
