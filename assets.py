@@ -106,6 +106,7 @@ images = {'earth_ss': pyg.image.load(get_path(path.join('assets', 'images', 'ear
           'world_map_NA': pyg.image.load(get_path(path.join('assets', 'images', 'world_map_NA.png'))),
           'world_map_big': pyg.image.load(get_path(path.join('assets', 'images', 'world_map_big.png'))),
           'map_marker': pyg.image.load(get_path(path.join('assets', 'images', 'map_marker.png'))),
+          'bigbigmap': pyg.image.load(get_path(path.join('assets', 'images', 'Academy Land.jpg'))),
           'GPS': pyg.image.load(get_path(path.join('assets', 'images', 'sats', 'gps.png'))),
           'MDef': pyg.image.load(get_path(path.join('assets', 'images', 'sats', 'mdef.png'))),
           'Nukes': pyg.image.load(get_path(path.join('assets', 'images', 'sats', 'nuke.png'))),
@@ -117,7 +118,7 @@ test = []
 for y in range(0, test_raw.get_rect().height, 50):
     for x in range(0, test_raw.get_rect().width, 50):
         # Create a 50x50 surface and pre-fill it
-        surf = pyg.Surface((50, 50))
+        surf = pyg.Surface((50, 50)).convert_alpha()
         surf.fill(colors['clear'])
 
         # Blit the portion of the tilesheet we want
