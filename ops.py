@@ -1,8 +1,4 @@
-import enum
-from numpy import full
 import pygame as pyg
-import random
-import math
 import csv
 
 from os import path
@@ -155,7 +151,7 @@ class GameField():
 
         self.mission = mission
 
-        # Trackers
+        # Mouse trackers
         self.hovered = None
         self.selected = None
 
@@ -226,6 +222,7 @@ class GameField():
         self.info_hud = pyg.Surface(self.window_rect.size).convert_alpha()
         self.info_hud.fill(colors['clear'])
         pyg.draw.polygon(self.info_hud, colors['ops_f_half'], info_coords)
+        pyg.draw.polygon(self.info_hud, colors['ops_friendly'], info_coords, 5)
         
         # Label text
         text = fonts['zrnic42'].render('OBJECTIVES', True, colors['starwhite'])
@@ -244,7 +241,7 @@ class GameField():
             elif item.endswith('loss'): fulltext = f'Have less than {item.split("loss")[0]} casulties'
             elif item == 'savecivs': fulltext = 'Save all civilians'
 
-            text = fonts['zrnic20'].render(fulltext, True, colors['starwhite'])
+            text = fonts['zrnic20'].render(fulltext, True, colors['black'])
             self.info_hud.blit(text, box.move(26, -2))
 
     def update(self, m_rel):
@@ -341,46 +338,27 @@ class GameField():
         self.image.blit(self.info_hud, (0, 0))
 
         # If we have are hovering over something, render a menu
-        if self.hovered != None and self.selected == None:
-            if self.hovered['team'] == 'friendly':
-                # Draw the main area at the bottom of the screen
+        if self.hovered or self.selected:
+            if self.hovered: obj = self.hovered
+            else: obj = self.selected
+
+            # Draw the main area at the bottom of the screen
+            if obj['team'] == 'friendly':
                 self.image.blit(self.f_hud, (0, 0))
-
-                # Render the text for the name of the obj
-                name = fonts['zrnic48'].render(self.hovered['type'], True, colors['white'])
-                self.image.blit(name, self.imp_coords['name'])
-
-            elif self.hovered['team'] == 'hostile':
-                # Draw the main area at the bottom of the screen
+            elif obj['team'] == 'hostile':
                 self.image.blit(self.h_hud, (0, 0))
-
-            elif self.hovered['team'] == 'passive':
-                # Draw the main area at the bottom of the screen
+            elif obj['team'] == 'passive':
                 self.image.blit(self.p_hud, (0, 0))
         
-        # If we've clicked something, render a menu
-        if self.selected != None:
-            if self.selected['team'] == 'friendly':
-                # Draw the main area at the bottom of the screen
-                self.image.blit(self.f_hud, (0, 0))
+            # Render the text for the name of the obj
+            name = fonts['zrnic48'].render(f"Type: {obj['type']}", True, colors['white'])
+            self.image.blit(name, self.imp_coords['name'])
 
-                # Render the text for the name of the obj
-                name = fonts['zrnic48'].render(self.selected['type'], True, colors['white'])
-                self.image.blit(name, self.imp_coords['name'])
-
-            elif self.selected['team'] == 'hostile':
-                # Draw the main area at the bottom of the screen
-                self.image.blit(self.h_hud, (0, 0))
-
-            elif self.selected['team'] == 'passive':
-                # Draw the main area at the bottom of the screen
-                self.image.blit(self.p_hud, (0, 0))
         
-            # If, while we have the select menu open, we hover over a different
-            # object, render a smaller menu over the hover object
-            if self.hovered != None and self.hovered != self.selected:
-                ...
-
+        # If, while we have the select menu open, we hover over a different
+        # object, render a smaller menu over the hover object
+        if self.hovered != None and self.hovered != self.selected:
+            ...
 
     def render(self):
         """
@@ -389,6 +367,7 @@ class GameField():
         Returns: None
         """
         self.image.fill(colors['black'])
+        self.image.blit(images['bigbigmap'], (self.scroll_x-300, self.scroll_y-300))
 
         self.render_layers()
 

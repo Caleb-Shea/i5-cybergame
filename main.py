@@ -6,18 +6,14 @@ A wargaming simulation made by the i5 cyber element, with inspiration from the i
 By: i5 Cyber element
 """
 
+# Module imports
 import datetime as dt
 import pygame as pyg
 import random
 import math
 
-from ops import MissionData, GameField
-from earth_system import EarthSystem
-from game_info import game_info
-from fullmenu import FullMenu
-from helper_func import *
-from assets import *
-from hud import HUD
+# Local imports are handled after pygame is initalized so we can use
+# .convert_alpha() in the initalization of images
 
 
 def create_stars(x_bound, y_bound):
@@ -29,7 +25,8 @@ def create_stars(x_bound, y_bound):
                            stars between
         y_bound [tuple] -> A tuple that contains the range of y-coords to render
                            stars between
-    Returns: [list] -> The complete list of stars to render
+    Returns:
+        [list] -> The complete list of stars to render
     """
     bg_stars = []
     for i in range(10000):
@@ -201,6 +198,11 @@ def main():
     pyg.time.set_timer(new_soundtrack, 300000) # 5 min
     add_shooting_star = pyg.USEREVENT + 4
     pyg.time.set_timer(add_shooting_star, 7000) # 7 sec
+
+    # Some of the images loaded in assets.py need to be converted to allow alpha
+    # values, so we do that here
+    for tile in tilesets['TEST']:
+        tile = tile.convert_alpha(tile)
 
     while True:
         # Pause menu
@@ -466,7 +468,6 @@ def main():
                 done_scrolling = True
         
         # If we click on an available operation, embark on it
-        #                                                        VERY TEMPORARY
         if (650, 340) in full_menu.ops_map_targets:
             if m_pressed[0]:
                 gamefield = GameField(MissionData('TEST'), None)
@@ -533,9 +534,20 @@ def main():
 if __name__ == '__main__':
     # Initalize pygame and create a window
     pyg.init()
-    pyg.display.set_icon(images['GPS'])
-    pyg.display.set_caption("i5 CYBERGAME")
     pyg.display.set_mode(flags=pyg.HWSURFACE | pyg.FULLSCREEN | pyg.DOUBLEBUF)
+    
+    # Local imports
+    from ops import MissionData, GameField
+    from earth_system import EarthSystem
+    from game_info import game_info
+    from fullmenu import FullMenu
+    from helper_func import *
+    from assets import *
+    from hud import HUD
+    
+    # Customize window
+    pyg.display.set_caption("i5 CYBERGAME")
+    pyg.display.set_icon(images['GPS'])
 
     # Start the program
     main()
