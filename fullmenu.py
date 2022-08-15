@@ -112,7 +112,7 @@ class FullMenu():
 
         self.ops_map_rect = pyg.rect.Rect(80, 80, 1100, 540)
         self.ops_map = pyg.Surface(self.ops_map_rect.size)
-        self.ops_map.blit(images['world_map_big'], (0, 0))
+        self.ops_map.blit(pyg.transform.smoothscale(images['bigbigmap'], self.ops_map_rect.size), (0, 0))
 
         self.ops_map_targets = []
         self.ops_map_hitlist = list(fullmenu_data.loc_coords.values())
