@@ -86,29 +86,36 @@ class MissionData():
         for layer in self.layers.keys():
             for j, row in enumerate(self.csv_layers[layer]):
                 for i, tile in enumerate(row):
+                    obj = {}
+
                     # Determine what kind of tile we're looking at by the tile number
                     if tile in ['0', '1', '2', '3', '4', '10', '11', '12', '13',
                                 '14', '20', '21', '22']:
-                        type = 'jam'
-                        team = 'hostile'
+                        obj['type'] = 'jam'
+                        obj['team'] = 'hostile'
                     elif tile in ['9']:
-                        type = 'tank'
-                        team = 'hostile'
+                        obj['type'] = 'tank'
+                        obj['team'] = 'hostile'
+                        obj['hp'] = 500
                     elif tile in ['19']:
-                        type = 'plane'
-                        team = 'hostile'
+                        obj['type'] = 'plane'
+                        obj['team'] = 'hostile'
+                        obj['hp'] = 400
                     elif tile in ['39']:
-                        type = 'tank'
-                        team = 'friendly'
+                        obj['type'] = 'tank'
+                        obj['team'] = 'friendly'
+                        obj['hp'] = 500
                     elif tile in ['49']:
-                        type = 'plane'
-                        team = 'friendly'
+                        obj['type'] = 'plane'
+                        obj['team'] = 'friendly'
+                        obj['hp'] = 400
                     elif tile in ['40', '41', '42', '50', '52', '60', '61', '62']:
-                        type = 'city_border'
-                        team = 'passive'
+                        obj['type'] = 'city_border'
+                        obj['team'] = 'passive'
                     elif tile in ['43', '51', '53', '63']:
-                        type = 'city'
-                        team = 'passive'
+                        obj['type'] = 'city'
+                        obj['team'] = 'passive'
+                        obj['name'] = 'Hubris City'
 
                     # '-1' indicates an empty tile, so if we get one of these,
                     # move on to the next tile
@@ -116,18 +123,18 @@ class MissionData():
                         continue
 
                     # Create the tile
-                    rect = pyg.rect.Rect(50*i, 50*j, 50, 50)
-                    surf = tilesets[self.name][int(tile)]
+                    obj['rect'] = pyg.rect.Rect(50*i, 50*j, 50, 50)
+                    obj['surf'] = tilesets[self.name][int(tile)]
 
-                    # Store as a dict
-                    obj = {'rect': rect, 'surf': surf, 'type': type, 'team': team}
+                    # TEMP
+                    obj['pic'] = obj['surf']
 
                     # Put the new object in the appropriate layer
-                    if type in ['jam']:
+                    if obj['type'] in ['jam']:
                         self.layers['space'].append(obj)
-                    elif type in ['plane']:
+                    elif obj['type'] in ['plane']:
                         self.layers['air'].append(obj)
-                    elif type in ['tank', 'city_border', 'city']:
+                    elif obj['type'] in ['tank', 'city_border', 'city']:
                         self.layers['ground'].append(obj)
 
 class GameField():
@@ -182,9 +189,12 @@ class GameField():
 
         # --- HUD init ---
         # A list of important coords to render at
-        self.imp_coords = {
-            'name': (self.window_rect.left+120, self.window_rect.bottom-80),
-            'pic': ()
+        self.hud_coords = {
+            'type': (self.window_rect.left+100, self.window_rect.bottom-70),
+            'name': (self.window_rect.centerx+70, self.window_rect.bottom-75),
+            'pic': (self.window_rect.centerx, self.window_rect.bottom-20),
+            'hp': (self.window_rect.right-20, self.window_rect.bottom-10),
+            'actions': (self.window_rect.right-20, self.window_rect.bottom-60)
         }
 
         # The coords of the area at the bottom of the screen
@@ -349,12 +359,24 @@ class GameField():
                 self.image.blit(self.h_hud, (0, 0))
             elif obj['team'] == 'passive':
                 self.image.blit(self.p_hud, (0, 0))
-        
-            # Render the text for the name of the obj
-            name = fonts['zrnic48'].render(f"Type: {obj['type']}", True, colors['white'])
-            self.image.blit(name, self.imp_coords['name'])
 
-        
+            # Render the text for the name of the obj
+            type = fonts['zrnic42'].render(f"Type: {obj['type']}", True, colors['white'])
+            self.image.blit(type, self.hud_coords['type'])
+
+            pic_big = pyg.transform.smoothscale(obj['pic'], (128, 128))
+            self.image.blit(pic_big, pic_big.get_rect(midbottom=self.hud_coords['pic']))
+
+            # Render information specific to whichever team the object is on
+            if obj['team'] == 'friendly':
+                hp = fonts['zrnic32'].render(f"HP: {obj['hp']}", True, colors['white'])
+                self.image.blit(hp, hp.get_rect(bottomright=self.hud_coords['hp']))
+            elif obj['team'] == 'hostile':
+                ...
+            elif obj['team'] == 'passive':
+                name = fonts['zrnic54'].render(obj['name'], True, colors['white'])
+                self.image.blit(name, self.hud_coords['name'])
+
         # If, while we have the select menu open, we hover over a different
         # object, render a smaller menu over the hover object
         if self.hovered != None and self.hovered != self.selected:
