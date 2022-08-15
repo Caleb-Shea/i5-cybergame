@@ -87,6 +87,7 @@ fonts = {'zrnic14': Font(get_path(path.join('assets', 'fonts', 'zrnic.ttf')), 14
          'zrnic42': Font(get_path(path.join('assets', 'fonts', 'zrnic.ttf')), 42),
          'zrnic46': Font(get_path(path.join('assets', 'fonts', 'zrnic.ttf')), 46),
          'zrnic48': Font(get_path(path.join('assets', 'fonts', 'zrnic.ttf')), 48),
+         'zrnic54': Font(get_path(path.join('assets', 'fonts', 'zrnic.ttf')), 54),
          'zrnic80': Font(get_path(path.join('assets', 'fonts', 'zrnic.ttf')), 80)}
 
 # Load audio files
