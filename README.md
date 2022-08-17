@@ -12,13 +12,45 @@ A wargame simulation made by the i5 cyber element, with inspiration from the i5 
 
 ### Brainstorming:
 - Cutscenes?
-  - After buying a new sat, attending a brief, etc., should there be a 2-5 second cutscene highlighting the new thing?
+  - After buying a new sat, attending a brief, etc., should there be a 1-3 second cutscene highlighting the new thing?
 
 - Ops gameplay:
-  - On selection of mission location, one of the following happens:
-    - XCOM style, except instead of people with guns, it's satellites with lasers and comms and shit. There is (unseen) ground/air troops that we are trying to enable to complete a mission.
-    - XCOM style, except instead of people with guns, it's satellites with lasers and comms and shit. We can see the ground/air forces under us, they move on their own and we have to feed them info and destry enemies to allow them to make it to the goal. As the game goes on, the space force gets requested for more and more high profile cases that require more and more resources.
-  - *Turn-based strategy fits the theme more, but real time action is arguably more enjoyable for a wider audience.
+  - Grid based movement or free move?
+  - Do the ground forces exist?
+    - If so:
+      - Do we control them?
+        - If we control them, how do the satellites play into that?
+        - If we don't (i.e. AI does), how should we render them so they aren't obtrusive?
+      - If the ground forces exist, we have more options for individual mission objectives, but the gameplay could be messier/higher learning curve
+        - Is that ok?
+    - If not:
+      - What is the goal of a mission?
+      - What do we render other than the satellites themselves?
+        - Earth or space background?
+      - How do we keep managing just satellites engaging?
+  - What do we include other than satellites?
+    - See above for ground forces discussion
+    - Cities?
+  - One main enemy or several?
+    - One is easier from a game comprehension standpoint
+    - Several is more realistic
+    - If we add several, things will get complicated quickly
+      - Is that ok?
+  - Will missions be static?
+    - I.e., will the main story be the same every time
+  - How do you win?
+    - Eliminate enemy forces?
+    - Guide friendlies to a target?
+    - Rescue passive forces?
+  - What happens when you lose?
+    - Should you just have replay the mission?
+      - Lower stakes, and the story will be static/less dynamic
+      - Easier
+    - Should the mission just be lost and you must move on?
+      - Higher stakes, and will allow for a dynamic story
+      - Requires more planning on the part of the player
+        - More engagement
+  - Should it be a hard game or an easy one?
 
 ### Win conditions
 - Beat Russia/China
@@ -30,6 +62,24 @@ A wargame simulation made by the i5 cyber element, with inspiration from the i5 
 - `pyg.Surface.fill()` is hardware accelerated. Maybe switch?
 - Compile with [PyInstaller](https://pyinstaller.org/en/stable/)
   - `pyinstaller --add-data "assets;assets" --add-data "ticker_events.csv;." --add-data "ops_data.csv;." main.py`
+
+### Name ideas/brainstorming:
+- Astra
+  - Astradiem
+- Adamo
+  - In latin, means to fall in love with
+- Auora Borealis
+- Invictus
+  - Invictra
+- Something with space
+- Portmanteaus
+- Easy to say
+- Probably just one word
+- If we want a website for it, use [pureWhoIs](https://purewhois.com)
+- Cosmos
+- i5?
+- USAFA?
+- Military at all?
 
 ### Materials needed:
 |Content|Approx Quantity|
@@ -59,6 +109,7 @@ A wargame simulation made by the i5 cyber element, with inspiration from the i5 
 ### Known bugs:
 - Pressing a key will sometimes stop the next mouse click from being registered
 - The EQ in the pause menu doesn't actually work lol
+- If the screen size changes (e.g. the game is moved to a monitor), the game doesn't adjust
 
 ## Credits:
 - https://freesound.org/people/EminYILDIRIM/sounds/536108/
