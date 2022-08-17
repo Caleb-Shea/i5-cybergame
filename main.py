@@ -500,6 +500,8 @@ def main():
         if full_menu.cur_tab == None:
             earth_sys.update()
         else:
+            earth_sys.manage_sats()
+            earth_sys.update_animations()
             earth_sys.spin()
         earth_sys.render()
 
