@@ -36,7 +36,7 @@ class EarthSystem():
                                'rect': earth.get_rect(), 'desc': 'Home sweet home'}
         acq = pyg.Surface((100, 100)).convert_alpha()
         acq.fill(colors['clear'])
-        pyg.draw.circle(acq, colors['cyan'], (50, 50), 50)
+        acq.blit(images['ACQUISITIONS_node'], (0, 0))
         self.nodes['ACQUISITIONS'] = {'name': 'ACQUISITIONS', 'surf': acq,
                                       'rect': acq.get_rect(), 'desc': 'Buy cool shit',
                                       'dist': 130, 'theta': 2*math.pi/5}
@@ -54,7 +54,7 @@ class EarthSystem():
                                'dist': 130, 'theta': 6*math.pi/5}
         ops = pyg.Surface((100, 100)).convert_alpha()
         ops.fill(colors['clear'])
-        pyg.draw.circle(ops, colors['cyan'], (50, 50), 50)
+        ops.blit(images['OPS_node'], (0, 0))
         self.nodes['OPS'] = {'name': 'OPS', 'surf': ops,
                              'rect': ops.get_rect(), 'desc': 'Kill Nazis', 'dist': 130,
                              'theta': 8*math.pi/5}
@@ -113,6 +113,54 @@ class EarthSystem():
             sat['theta'] += 0.0015
             sat['rect'].center = (earth_rect.centerx + sat['dist'] * math.cos(sat['theta']),
                                   earth_rect.centery + sat['dist'] * math.sin(sat['theta']))
+    
+    def update_animations(self):
+        """
+        Description: Update any objects that have an animated sprite.
+        Parameters: None
+        Returns: None
+        """
+        # Increment frame counter
+        self.earthss_cur += 0.25
+
+        # Grab the current frame from the spritesheet
+        rect = self.earthss_rects[int(self.earthss_cur%len(self.earthss_rects))]
+
+        # Update the image
+        self.nodes['EARTH']['surf'].blit(self.earthss, (0, 0), rect)
+    
+    def manage_sats(self):
+        """
+        Description: Update the number of satellites if we've bought new ones.
+        Parameters: None
+        Returns: None
+        """
+        while len(self.sats) < game_info['Num Sats']:
+            # Name each individual satellite based on what type we're missing
+            sat_names = ['GPS', 'ABD', 'SPI', 'MDef', 'ABCDE', 'IROOI', 'ICBM', 'B.O.L.L.S.', 'Nukes']
+            for n in sat_names:
+                if len([i for i in self.sats if i['name'] == n]) < game_info[f'Acq {n} Level']:
+                    name = n
+                    break
+            else:
+                # Failsafe
+                name = 'UNKNOWN SATELLITE'
+
+            # Create a surface
+            if name in ['GPS', 'ICBM', 'MDef', 'Nukes']:
+                surf = images[name]
+            else:
+                surf = pyg.Surface((32, 32))
+                surf.fill(colors['sand'])
+
+            # Create the sat's data
+            dist = random.randint(300, 400)
+            theta = random.random() * 2*math.pi
+
+            # Create a new sat "instance"
+            new_sat = {'name': name, 'surf': surf, 'rect': surf.get_rect(), 'dist': dist,
+                       'theta': theta}
+            self.sats.append(new_sat)
 
     def update(self, is_click=False):
         """
@@ -151,37 +199,10 @@ class EarthSystem():
 
         # --- Satellite management ---
         # Add new sats if necessary
-        while len(self.sats) < game_info['Num Sats']:
-            # Name each individual satellite based on what type we're missing
-            sat_names = ['GPS', 'ABD', 'SPI', 'MDef', 'ABCDE', 'IROOI', 'ICBM', 'B.O.L.L.S.', 'Nukes']
-            for n in sat_names:
-                if len([i for i in self.sats if i['name'] == n]) < game_info[f'Acq {n} Level']:
-                    name = n
-                    break
-            else:
-                # Failsafe
-                name = 'UNKNOWN SATELLITE'
-
-            # Create a surface
-            if name in ['GPS', 'ICBM', 'MDef', 'Nukes']:
-                surf = images[name]
-            else:
-                surf = pyg.Surface((32, 32))
-                surf.fill(colors['sand'])
-
-            # Create the sat's data
-            dist = random.randint(300, 400)
-            theta = random.random() * 2*math.pi
-
-            # Create a new sat "instance"
-            new_sat = {'name': name, 'surf': surf, 'rect': surf.get_rect(), 'dist': dist,
-                       'theta': theta}
-            self.sats.append(new_sat)
+        self.manage_sats()
         
         # Update images that are based on spritesheets
-        self.earthss_cur += 0.3
-        rect = self.earthss_rects[int(self.earthss_cur%len(self.earthss_rects))]
-        self.nodes['EARTH']['surf'].blit(self.earthss, (0, 0), rect)
+        self.update_animations()
 
         # Spin nodes and sats
         self.spin()
@@ -209,6 +230,9 @@ class EarthSystem():
                 self.window.blit(pyg.transform.smoothscale(node['surf'], node['rect'].inflate(10, 10).size), node['rect'].move(-5, -5))
             else:
                 self.window.blit(node['surf'], node['rect'])
+            
+            # Temporary fix because there is are images for ops and acq but nothing else
+            if node['name'] in ['OPS', 'ACQUISITIONS']: continue
 
             # Draw the names of each node on each node
             if len(node['name']) < 6:

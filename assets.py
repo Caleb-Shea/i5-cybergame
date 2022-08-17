@@ -75,7 +75,8 @@ colors = {'clear': pyg.Color(  0,   0,   0,   0),
           'purple': pyg.Color(128,   0, 255)}
 
 # Load fonts in various sizes
-fonts = {'zrnic14': Font(get_path(path.join('assets', 'fonts', 'zrnic.ttf')), 14),
+fonts = {'origi24': Font(get_path(path.join('assets', 'fonts', 'origicide.ttf')), 24),
+         'zrnic14': Font(get_path(path.join('assets', 'fonts', 'zrnic.ttf')), 14),
          'zrnic16': Font(get_path(path.join('assets', 'fonts', 'zrnic.ttf')), 16),
          'zrnic18': Font(get_path(path.join('assets', 'fonts', 'zrnic.ttf')), 18),
          'zrnic20': Font(get_path(path.join('assets', 'fonts', 'zrnic.ttf')), 20),
@@ -103,6 +104,8 @@ audio['ui_error'].set_volume(.15)
 
 # Load any images needed by the program
 images = {'earth_ss': pyg.image.load(get_path(path.join('assets', 'images', 'earth.png'))),
+          'OPS_node': pyg.image.load(get_path(path.join('assets', 'images', 'earth_sys', 'ops.png'))),
+          'ACQUISITIONS_node': pyg.image.load(get_path(path.join('assets', 'images', 'earth_sys', 'acq.png'))),
           'world_map': pyg.image.load(get_path(path.join('assets', 'images', 'world_map.png'))),
           'world_map_NA': pyg.image.load(get_path(path.join('assets', 'images', 'world_map_NA.png'))),
           'world_map_big': pyg.image.load(get_path(path.join('assets', 'images', 'world_map_big.png'))),
