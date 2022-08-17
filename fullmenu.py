@@ -34,8 +34,8 @@ class FullMenu():
         self.image = self.image_base.copy()
 
         # Create tabs
-        self.tab_names = ['ACQUISITIONS', 'OPS', 'INTEL', 'CYBER', 'PERSONNEL',
-                          'EVENTS']
+        self.tab_names = ['ACQUISITIONS', 'PERSONNEL', 'CYBER', 'INTEL', 'EVENTS',
+                          'OPS']
         self.tab_rects = []
         for i in range(len(self.tab_names)):
             x_size = self.rect.width//len(self.tab_names) - 20
@@ -46,6 +46,8 @@ class FullMenu():
         self.cur_tab = self.tab_names[0]
 
         # Tab specific initalization
+        bg_rect = pyg.rect.Rect((5, 50), self.rect.inflate(-10, -55).size)
+
         # --- Intel tab ---
         self.briefs = fullmenu_data.intel_briefs
         self.hovered_brief = -1
@@ -65,7 +67,7 @@ class FullMenu():
             rect = pyg.rect.Rect((x, y), (550, 70))
             self.brief_rects.append(rect)
 
-        self.intel_bg_rect = pyg.rect.Rect(5, 50, 1250, 645)
+        self.intel_bg_rect = bg_rect.copy()
 
         # --- Acquisitions tab ---
         self.sats = fullmenu_data.acq_data
@@ -76,7 +78,7 @@ class FullMenu():
             rect = pyg.rect.Rect((80, 100 + (500/len(self.sats))*i), (250, 55))
             self.sat_rects.append(rect)
 
-        self.acq_bg_rect = pyg.rect.Rect(5, 50, 1250, 645)
+        self.acq_bg_rect = bg_rect.copy()
         self.acq_sel_rect = pyg.rect.Rect(80, 100, 250, 500)
         self.acq_info_rect = pyg.rect.Rect(380, 100, 800, 500)
         self.acq_pic_rect = pyg.rect.Rect(400, 120, 400, 350)
@@ -86,6 +88,10 @@ class FullMenu():
         self.acq_stats_rect = pyg.rect.Rect(400, 485, 400, 100)
 
         # --- Cyber tab ---
+        half_bg = bg_rect.copy().inflate(-bg_rect.width//2, 0)
+        self.cyber_def_rect = half_bg.move(-bg_rect.width//4, 0)
+        self.cyber_off_rect = half_bg.move(bg_rect.width//4, 0)
+
         self.cyber_def_level = 0
         self.cyber_off_level = 0
 
@@ -100,15 +106,16 @@ class FullMenu():
         self.cyber_map = pyg.Surface(self.cyber_map_rect.size)
         self.cyber_map.blit(images['world_map'], (0, 0))
 
-        self.cyber_def_rect = pyg.rect.Rect(5, 50, 630, 645)
-        self.cyber_def_header = pyg.rect.Rect(30, 60, 300, 60)
+        self.cyber_def_header = pyg.rect.Rect(0, 0, 300, 60)
+        self.cyber_def_header.topleft = self.cyber_def_rect.move(20, 10).topleft
         self.cyber_def_up_rect = pyg.rect.Rect(215, 590, 300, 60)
+
+        self.cyber_off_header = pyg.rect.Rect(0, 0, 300, 60)
+        self.cyber_off_header.topright = self.cyber_off_rect.move(-20, 10).topright
         self.cyber_graph_rect = pyg.rect.Rect(25, 150, 580, 400)
-        self.cyber_off_rect = pyg.rect.Rect(630, 50, 625, 645)
-        self.cyber_off_header = pyg.rect.Rect(930, 60, 300, 60)
 
         # --- Ops tab ---
-        self.ops_bg_rect = pyg.rect.Rect(5, 50, 1250, 645)
+        self.ops_bg_rect = bg_rect.copy()
 
         self.ops_map_rect = pyg.rect.Rect(80, 80, 1100, 540)
         self.ops_map = pyg.Surface(self.ops_map_rect.size)
@@ -118,7 +125,7 @@ class FullMenu():
         self.ops_map_hitlist = list(fullmenu_data.loc_coords.values())
 
         # --- Personnel tab ---
-        self.ppl_bg_rect = pyg.rect.Rect(5, 50, 1250, 645)
+        self.ppl_bg_rect = bg_rect.copy()
 
         self.ppl_bar_rect = pyg.rect.Rect(50, 120, 910, 200)
         self.ppl_bar = pyg.Surface(self.ppl_bar_rect.size)
@@ -171,7 +178,7 @@ class FullMenu():
         self.ppl_pic.blit(text, text.get_rect(center=cent))
 
         # --- Events tab ---
-        self.events_bg_rect = pyg.rect.Rect(5, 50, 1250, 645)
+        self.events_bg_rect = bg_rect.copy()
         self.events_reel_rect = pyg.rect.Rect(80, 80, 1100, 520)
 
         self.events_scroll = 0
