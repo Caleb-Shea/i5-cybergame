@@ -86,48 +86,12 @@ class MissionData():
         for layer in self.layers.keys():
             for j, row in enumerate(self.csv_layers[layer]):
                 for i, tile in enumerate(row):
-                    obj = {}
-
-                    # Determine what kind of tile we're looking at by the tile number
-                    if tile in ['0', '1', '2', '3', '4', '10', '11', '12', '13',
-                                '14', '20', '21', '22']:
-                        obj['type'] = 'jam'
-                        obj['team'] = 'hostile'
-                    elif tile in ['9']:
-                        obj['type'] = 'tank'
-                        obj['team'] = 'hostile'
-                        obj['hp'] = 500
-                    elif tile in ['19']:
-                        obj['type'] = 'plane'
-                        obj['team'] = 'hostile'
-                        obj['hp'] = 400
-                    elif tile in ['39']:
-                        obj['type'] = 'tank'
-                        obj['team'] = 'friendly'
-                        obj['hp'] = 500
-                    elif tile in ['49']:
-                        obj['type'] = 'plane'
-                        obj['team'] = 'friendly'
-                        obj['hp'] = 400
-                    elif tile in ['40', '41', '42', '50', '52', '60', '61', '62']:
-                        obj['type'] = 'city_border'
-                        obj['team'] = 'passive'
-                    elif tile in ['43', '51', '53', '63']:
-                        obj['type'] = 'city'
-                        obj['team'] = 'passive'
-                        obj['name'] = 'Hubris City'
-
                     # '-1' indicates an empty tile, so if we get one of these,
                     # move on to the next tile
-                    elif tile == '-1':
-                        continue
+                    if tile == '-1': continue
 
-                    # Create the tile
-                    obj['rect'] = pyg.rect.Rect(50*i, 50*j, 50, 50)
-                    obj['surf'] = tilesets[self.name][int(tile)]
-
-                    # TEMP
-                    obj['pic'] = obj['surf']
+                    # Create a tile object
+                    obj = self.get_obj_data(i, j, tile)
 
                     # Put the new object in the appropriate layer
                     if obj['type'] in ['jam']:
@@ -136,6 +100,68 @@ class MissionData():
                         self.layers['air'].append(obj)
                     elif obj['type'] in ['tank', 'city_border', 'city']:
                         self.layers['ground'].append(obj)
+        
+    def get_obj_data(self, x, y, tile):
+        """
+        Description: A function to better organize the __init__ function. This
+                     function is responsible for the creation of an object and
+                     the data (location, type, images) for that object
+        Parameters:
+            x [int] -> The x value of the object
+            y [int] -> The y value of the object
+            tile [int] -> The tile ID of the object, used for grabbing the
+                          appropriate tile from the tileset
+        Returns:
+            [dict] -> The object that represents one object
+        """
+        obj = {}
+
+        # Determine what kind of tile we're looking at by the tile number
+
+        # Jam tiles
+        if tile in ['0', '1', '2', '3', '4', '10', '11', '12', '13',
+                    '14', '20', '21', '22']:
+            obj['type'] = 'jam'
+            obj['team'] = 'hostile'
+        
+        # Hostile
+        elif tile in ['9']:
+            obj['type'] = 'tank'
+            obj['team'] = 'hostile'
+            obj['hp'] = 500
+        elif tile in ['19']:
+            obj['type'] = 'plane'
+            obj['team'] = 'hostile'
+            obj['hp'] = 400
+        
+        # Friendly
+        elif tile in ['39']:
+            obj['type'] = 'tank'
+            obj['team'] = 'friendly'
+            obj['hp'] = 500
+        elif tile in ['49']:
+            obj['type'] = 'plane'
+            obj['team'] = 'friendly'
+            obj['hp'] = 400
+        
+        # Passive
+        elif tile in ['40', '41', '42', '50', '52', '60', '61', '62']:
+            obj['type'] = 'city_border'
+            obj['team'] = 'passive'
+        elif tile in ['43', '51', '53', '63']:
+            obj['type'] = 'city'
+            obj['team'] = 'passive'
+            obj['name'] = 'Hubris City'
+
+
+        # Create the tile
+        obj['rect'] = pyg.rect.Rect(50*x, 50*y, 50, 50)
+        obj['surf'] = tilesets[self.name][int(tile)]
+
+        # TEMP
+        obj['pic'] = obj['surf']
+
+        return obj
 
 class GameField():
     def __init__(self, mission, assets):
@@ -163,8 +189,8 @@ class GameField():
         self.selected = None
 
         # Grid size
-        # This is always 50, but we use a variable for readability
-        self.gridsize = 50
+        # Use a variable for readability
+        self.gridsize = 125
 
         # Find the topleft corner
         self.topleft = (self.window_rect.width/2 - self.mission.game_area[0]*self.gridsize/2,
@@ -177,7 +203,7 @@ class GameField():
         # Set inital positions to be aligned with the grid
         for layer in ['ground', 'air', 'space']:
             for obj in self.mission.layers[layer]:
-                obj['rect'].move_ip(self.topleft[0], self.topleft[1])
+                obj['rect'].move_ip(self.topleft[0] + 600, self.topleft[1] + 400)
         
         # --- Player data ---
         self.p_max_actions = 5
@@ -391,9 +417,9 @@ class GameField():
         self.image.fill(colors['black'])
         self.image.blit(images['bigbigmap'], (self.scroll_x-300, self.scroll_y-300))
 
-        self.render_layers()
-
         self.render_grid()
+
+        self.render_layers()
 
         self.render_hud()
 
