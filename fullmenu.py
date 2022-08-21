@@ -24,10 +24,10 @@ class FullMenu():
         self.ui_channel = ui_channel
 
         # Create the image for the full menu
-        self.rect = self.window.get_rect().inflate(-20, -20)
+        self.rect = self.window.get_rect()
         self.image_base = pyg.Surface(self.rect.size).convert_alpha()
         self.image_base.fill(colors['clear'])
-        pyg.draw.rect(self.image_base, colors['rose'], ((0, 0), self.rect.size), 5) # On larger displays this breaks
+        pyg.draw.rect(self.image_base, colors['rose'], ((10, 10), self.rect.inflate(-20, -20).size), 5) # On larger displays this breaks
 
         # self.image is the surface where everything happens, and self.image_base
         # is the surface that we keep plain for easy redrawing
@@ -38,15 +38,15 @@ class FullMenu():
                           'OPS']
         self.tab_rects = []
         for i in range(len(self.tab_names)):
-            x_size = self.rect.width//len(self.tab_names) - 20
-            rect = pyg.rect.Rect(i * x_size, 0, x_size, 50)
+            x_size = self.rect.inflate(-20, 0).width//len(self.tab_names) - 20
+            rect = pyg.rect.Rect(i*x_size + 10, 10, x_size, 50)
             self.tab_rects.append(rect)
 
         # We must have a selected tab for the first frame of rendering
         self.cur_tab = self.tab_names[0]
 
         # Tab specific initalization
-        bg_rect = pyg.rect.Rect((5, 50), self.rect.inflate(-10, -55).size)
+        bg_rect = pyg.rect.Rect((15, 60), self.rect.inflate(-30, -75).size)
 
         # --- Intel tab ---
         self.briefs = fullmenu_data.intel_briefs
@@ -128,11 +128,12 @@ class FullMenu():
         self.ppl_bg_rect = bg_rect.copy()
 
         self.ppl_bar_rect = pyg.rect.Rect(50, 120, 910, 200)
-        self.ppl_bar = pyg.Surface(self.ppl_bar_rect.size)
+        self.ppl_bar = pyg.Surface(self.ppl_bar_rect.size).convert()
+        self.ppl_bar.fill(colors['black'])
 
         # Legend objects
         self.ppl_legend_rect = pyg.rect.Rect(980, 120, 230, 200)
-        self.ppl_legend = pyg.Surface(self.ppl_legend_rect.size)
+        self.ppl_legend = pyg.Surface(self.ppl_legend_rect.size).convert()
         self.ppl_legend.fill(colors['pink'])
 
         # Create the legend for the bar
@@ -149,28 +150,27 @@ class FullMenu():
 
         # Hiring menu
         self.ppl_hiring_rect = pyg.rect.Rect(60, 350, 700, 280)
-        self.ppl_hiring = pyg.Surface(self.ppl_hiring_rect.size)
 
-        self.ppl_hiring_selecter = pyg.Surface((200, 280))
-        self.ppl_hiring_selecter.fill(colors['white'])
+        self.ppl_hiring_menu = pyg.Surface(self.ppl_hiring_rect.size).convert()
+        self.ppl_hiring_menu.fill(colors['gray'])
+        pyg.draw.rect(self.ppl_hiring_menu, colors['darkgray'],
+                     ((0, 0), self.ppl_hiring_rect.size), 20)
 
-        self.ppl_hiring_pic = pyg.Surface((300, 280))
-        self.ppl_hiring_pic.fill(colors['gray'])
-        # Pic placeholder text
-        text = fonts['zrnic48'].render('PICTURE', True, colors['deepblue'])
-        self.ppl_hiring_pic.blit(text, text.get_rect(center=(150, 140)))
+        self.ppl_hiring_button = pyg.rect.Rect(140, 510, 540, 70)
 
-        self.ppl_hiring_info = pyg.Surface((200, 280))
-        self.ppl_hiring_info.fill(colors['darkgray'])
+        self.ppl_hiring_bar = pyg.rect.Rect(160, 420, 500, 50)
+        self.ppl_hiring_slider = pyg.rect.Rect(150, 415, 20, 60)
 
-        self.ppl_hiring.blit(self.ppl_hiring_selecter, (0, 0))
-        self.ppl_hiring.blit(self.ppl_hiring_pic, (200, 0))
-        self.ppl_hiring.blit(self.ppl_hiring_info, (500, 0))
+        # The left half of the bar will range from 0-100, and the right half
+        # will range from 100-1000
+        # Also we use 1004 so the scroll bar
+        self.ppl_hiring_range = [0, 100, 1004]
+        self.ppl_hiring_num = 0
 
-        # Picture
+        # Picture/Animation
         self.ppl_pic_rect = pyg.rect.Rect(780, 360, 410, 260)
-        self.ppl_pic = pyg.Surface(self.ppl_pic_rect.size)
-        self.ppl_pic.fill(colors['ddarkgray'])
+        self.ppl_pic = pyg.Surface(self.ppl_pic_rect.size).convert_alpha()
+        self.ppl_pic.fill(colors['indigo'])
 
         # Placeholder text
         text = fonts['zrnic48'].render('PICTURE', True, colors['lightgray'])
@@ -196,7 +196,7 @@ class FullMenu():
         """
         # Detect hovering
         for i, rect in enumerate(self.brief_rects):
-            if rect.move(10, 10).collidepoint(m_pos):
+            if rect.collidepoint(m_pos):
                 # We move the rect because these rects are not based on the
                 # main window
                 self.hovered_brief = i
@@ -210,7 +210,7 @@ class FullMenu():
                 if abs(self.selected_brief - i) == 1:
                     continue
                 # If we clicked on a rect
-                if rect.move(10, 10).collidepoint(m_pos):
+                if rect.collidepoint(m_pos):
                     self.selected_brief = i
                     break
             else: # If we didn't break from the loop, deselect
@@ -272,7 +272,7 @@ class FullMenu():
         """
         # Detect hovering
         for i, rect in enumerate(self.sat_rects):
-            if rect.move(10, 10).collidepoint(m_pos):
+            if rect.collidepoint(m_pos):
                 # We move the rect because these rects are not based on the
                 # main window
                 self.hovered_sat = i
@@ -284,16 +284,16 @@ class FullMenu():
         if m_pressed[0]:
             for i, rect in enumerate(self.sat_rects):
                 # If we clicked on a rect
-                if rect.move(10, 10).collidepoint(m_pos):
+                if rect.collidepoint(m_pos):
                     self.selected_sat = i
                     break
                 # Don't deselect the satellite if we clicked on the description
                 # or the picture or the stats graphic
-                if self.acq_descbg_rect.move(10, 10).collidepoint(m_pos):
+                if self.acq_descbg_rect.collidepoint(m_pos):
                     break
-                if self.acq_pic_rect.move(10, 10).collidepoint(m_pos):
+                if self.acq_pic_rect.collidepoint(m_pos):
                     break
-                if self.acq_stats_rect.move(10, 10).collidepoint(m_pos):
+                if self.acq_stats_rect.collidepoint(m_pos):
                     break
             else: # If we didn't break from the loop, deselect
                 self.selected_sat = -1
@@ -302,7 +302,7 @@ class FullMenu():
             if self.selected_sat != -1:
                 # And we clicked on it
                 if button != None:
-                    if self.acq_button_rect.move(10, 10).collidepoint(m_pos):
+                    if self.acq_button_rect.collidepoint(m_pos):
                         new_sat = self.sats[self.selected_sat]
                         # If we have the money, purchase the satellite
                         if game_info['Cash'] >= new_sat['money_cost']:
@@ -373,7 +373,7 @@ class FullMenu():
             pyg.draw.rect(self.image, colors['pink'], self.acq_button_rect)
 
             # Cost of satellite
-            cash_cost = fonts['zrnic26'].render(f"Purchase: {self.sats[self.selected_sat]['money_cost']:,}", True, colors['black'])
+            cash_cost = fonts['zrnic26'].render(f"Purchase: ${self.sats[self.selected_sat]['money_cost']:,}", True, colors['black'])
             self.image.blit(cash_cost, cash_cost.get_rect(center=self.acq_button_rect.center))
 
     def update_cyber(self, m_pos, m_pressed, button):
@@ -389,7 +389,7 @@ class FullMenu():
         """
         # --- Defensive ---
         # Tooltip rendering
-        if self.cyber_def_up_rect.move(10, 10).collidepoint(m_pos):
+        if self.cyber_def_up_rect.collidepoint(m_pos):
             # Show a tooltip for upgrading defence
             self.cyber_inflate_def_up = True
 
@@ -563,7 +563,45 @@ class FullMenu():
                                  button on the first frame
         Returns: None
         """
-        ...
+        
+        # Check for mouse movement
+        if m_pressed[0]:
+            # Hiring slider
+            if self.ppl_hiring_bar.collidepoint(m_pos):
+                # Make the slider track the mouse
+                self.ppl_hiring_slider.centerx = m_pos[0]
+
+                # Clamp slider to ends
+                if self.ppl_hiring_slider.centerx >= self.ppl_hiring_bar.right:
+                    self.ppl_hiring_slider.centerx = self.ppl_hiring_bar.right
+                if self.ppl_hiring_slider.centerx <= self.ppl_hiring_bar.left:
+                    self.ppl_hiring_slider.centerx = self.ppl_hiring_bar.left
+
+                # Set the number of people we're hiring
+                # The left half of the bar will range from 0-100, and the right half
+                # will range from 100-1000
+                if m_pos[0] < self.ppl_hiring_bar.centerx:
+                    self.ppl_hiring_num = int((m_pos[0]-self.ppl_hiring_bar.x)
+                                            / (self.ppl_hiring_bar.centerx-self.ppl_hiring_bar.x)
+                                            * (self.ppl_hiring_range[1]-self.ppl_hiring_range[0]))
+                else:
+                    self.ppl_hiring_num = int((m_pos[0]-self.ppl_hiring_bar.centerx)
+                                            / (self.ppl_hiring_bar.right-self.ppl_hiring_bar.centerx)
+                                            * (self.ppl_hiring_range[2]-self.ppl_hiring_range[1]-self.ppl_hiring_range[0]))
+                    # We subtract the middle step before multipling, then re-add
+                    # it after multiplying for reasons I don't know enough math
+                    # to be able to convey lol
+                    self.ppl_hiring_num += self.ppl_hiring_range[1]
+        
+        # Check for clicks
+        if button == 1:
+            # Buying button
+            if self.ppl_hiring_button.collidepoint(m_pos):
+                # If we have enough monetary assets
+                if game_info['Cash'] >= 100*self.ppl_hiring_num:
+                    game_info['Cash'] -= 100*self.ppl_hiring_num
+                    game_info['Staff Assignments']['Unassigned'] += self.ppl_hiring_num
+                    game_info['Num Personnel'] += self.ppl_hiring_num
 
     def render_personnel(self):
         """
@@ -586,12 +624,13 @@ class FullMenu():
             # Calculate the width of the segment that represents one job
             width = game_info['Staff Assignments'][job]/game_info['Num Personnel']*self.ppl_bar_rect.width
 
-            # Add 2 to the width to prevent round-error gaps between bars
-            rect = pyg.rect.Rect(start_x, 0, width + 2, self.ppl_bar_rect.height)
-            pyg.draw.rect(self.ppl_bar, job_color, rect)
+            # Add 1 to the width to prevent round-error gaps between bars
+            rect = pyg.rect.Rect(start_x, 0, width + 1, self.ppl_bar_rect.height)
+            pyg.draw.rect(self.ppl_bar, job_color.lerp(colors['black'], .5), rect)
+            pyg.draw.rect(self.ppl_bar, job_color, rect, 10)
 
             # Draw the number of people currently assigned to a job
-            text = fonts['zrnic20'].render(f"{game_info['Staff Assignments'][job]} People", True, colors['black'])
+            text = fonts['zrnic24'].render(f"{game_info['Staff Assignments'][job]}", True, colors['starwhite'])
             self.ppl_bar.blit(text, text.get_rect(center=rect.center))
 
             # Keep track of where the next segment should start
@@ -601,7 +640,21 @@ class FullMenu():
         self.image.blit(self.ppl_bar, self.ppl_bar_rect)
 
         # Render hiring menu
-        self.image.blit(self.ppl_hiring, self.ppl_hiring_rect)
+        self.image.blit(self.ppl_hiring_menu, self.ppl_hiring_rect)
+
+        # Draw slider interface
+        pyg.draw.rect(self.image, colors['white'], self.ppl_hiring_bar)
+        pyg.draw.rect(self.image, colors['red'], self.ppl_hiring_slider)
+
+        # Draw button
+        pyg.draw.rect(self.image, colors['purple'], self.ppl_hiring_button)
+
+        # Draw text with black or red text depending on whether we can afford it
+        if game_info['Cash'] >= 100*self.ppl_hiring_num:
+            text = fonts['zrnic36'].render(f'Hire {self.ppl_hiring_num:,} New Workers: ${100*self.ppl_hiring_num:,}', True, colors['black'])
+        else:
+            text = fonts['zrnic36'].render(f'Hire {self.ppl_hiring_num:,} New Workers: ${100*self.ppl_hiring_num:,}', True, colors['darkred'])
+        self.image.blit(text, text.get_rect(center=self.ppl_hiring_button.center))
 
         # Render the picture
         self.image.blit(self.ppl_pic, self.ppl_pic_rect)
@@ -690,7 +743,7 @@ class FullMenu():
             if self.cur_tab == name:
                 # The selected tab has a larger rect that is moved slightly to
                 # the right, so the mouse collisions must reflect that
-                cur_rect = rect.inflate(20*len(self.tab_rects), 0).move(10*len(self.tab_rects), 0).move(10, 10)
+                cur_rect = rect.inflate(20*len(self.tab_rects), 0).move(10*len(self.tab_rects), 0)
 
                 # If the user clicked on the current tab, don't do anything
                 if cur_rect.collidepoint(m_pos) and m_pressed[0]:
@@ -704,7 +757,7 @@ class FullMenu():
                 if right_of_sel:
                     rect = rect.move(20*len(self.tab_rects), 0)
                 # If the user clicks on a different tab, switch to it
-                if rect.move(10, 10).collidepoint(m_pos) and m_pressed[0]:
+                if rect.collidepoint(m_pos) and m_pressed[0]:
                     self.cur_tab = name
                     break
 
@@ -757,7 +810,7 @@ class FullMenu():
             self.image.blit(text, text.get_rect(center=rect.center))
 
             # Draw divider lines
-            pyg.draw.line(self.image, colors['darkgray'], (rect.right-1, 0), (rect.right-1, 50))
+            pyg.draw.line(self.image, colors['darkgray'], (rect.right-1, 10), (rect.right-1, 60))
 
     def render(self):
         """

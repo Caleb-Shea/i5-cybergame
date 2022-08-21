@@ -13,7 +13,7 @@ A wargame simulation made by the i5 cyber element, with inspiration from the i5 
 ### Brainstorming:
 - Cutscenes?
   - After buying a new sat, attending a brief, etc., should there be a 1-3 second cutscene highlighting the new thing?
-
+- Background animations behind each fullmenu graphics
 - Ops gameplay:
   - Grid based movement or free move?
   - Do the ground forces exist?
@@ -98,11 +98,16 @@ A wargame simulation made by the i5 cyber element, with inspiration from the i5 
 *Could be pseudorandomly generated
 
 ### Todo list:
+- __FullMenu:__ FIX INTEL TAB
 - __EMenu:__ Move earth to the left when closing earth vignette
 - __FullMenu:__ Add ability for newline characters in acquisitions tab descriptions
 - Change Acquitions/Cyber tab to use surfaces
+- __FullMenu:__ Standardize colors for each tab across the game
 - __assets.py:__ Support dynamic loading of resources only when needed
 - __FullMenu:__ Add support for larger displays (use percentages rather than absolutes)
+- __assets.py:__ Restructure colors
+- __FullMenu:__ Remove relative coords; replace with absolute
+- __FullMenu:__ Decompose into smaller classes?
 - Add ability to click on ticker to open events menu
 - Easter eggs/Achievements
 
