@@ -342,11 +342,11 @@ def main():
                 elif event.key == pyg.K_SPACE:
                     game_info['Cash'] += 900000000000000
                     game_info['Reputation'] += 20
-                    game_info['Num Personnel'] += 200
-                    game_info['Staff Assignments']['Unassigned'] += 100
-                    game_info['Staff Assignments']['Cyber'] += 50
-                    game_info['Staff Assignments']['Intel'] += 20
-                    game_info['Staff Assignments']['Ops'] += 30
+                    game_info['Num Personnel'] += 210
+                    game_info['Staff Assignments']['Unassigned'] += 170
+                    game_info['Staff Assignments']['Cyber'] += 10
+                    game_info['Staff Assignments']['Intel'] += 10
+                    game_info['Staff Assignments']['Ops'] += 10
                     game_info['Staff Assignments']['Acquisitions'] += 10
                 
                 elif event.key == pyg.K_m:
