@@ -1,6 +1,8 @@
 # i5-cybergame
 A wargame simulation made by the i5 cyber element, with inspiration from the i5 intel element.
 
+Picture this: In the very near future, you assume total command over a country's space force. Tasked with balancing asset management and monitoring the world stage through ~riviting~ intel briefs in an ever-worsening geopolitical landscape, it's only a matter of time before something snaps. Eventually it does, and a coalition of hostile nations joins forces against you. You must now conduct covert (or not so covert) operations against the enemy before they get too powerful to stop!
+
 ## Contributers:
 - Michaela Kovalsky (Project Manager)
 - Caleb Shea (Development Lead)
@@ -14,6 +16,10 @@ A wargame simulation made by the i5 cyber element, with inspiration from the i5 
 - Cutscenes?
   - After buying a new sat, attending a brief, etc., should there be a 1-3 second cutscene highlighting the new thing?
 - Background animations behind each fullmenu graphics
+- Mood:
+  - Sarcastic?
+  - Serious?
+  - Funny?
 - Ops gameplay:
   - Grid based movement or free move?
   - Do the ground forces exist?
@@ -53,9 +59,18 @@ A wargame simulation made by the i5 cyber element, with inspiration from the i5 
   - Should it be a hard game or an easy one?
 
 ### Win conditions
-- Beat Russia/China
-  - Launch a pre-emptive strike by upgrading cyber and/or ops to a high enough level
-  - Or, develop strong enough defenses that when the attack comes, it causes no harm
+- Beat enough operations to destroy the enemy
+- Launch a pre-emptive strike by upgrading cyber and/or ops to a high enough level
+- Develop strong enough defenses that when the attack comes, it causes no harm
+- Diplomacy???
+- Sabotage???
+- There needs to be several different ways to play the game:
+  - Agressive
+  - Passive
+  - Stealth
+  - Economy
+  - Skilled tactics
+- There must be a way to reward players for having more skill/strategy
 
 ### General:
 - `pygame.sprite.LayeredUpdates()` is a thing. At some point this might be helpful
