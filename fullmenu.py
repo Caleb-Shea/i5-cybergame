@@ -159,13 +159,14 @@ class FullMenu():
         self.ppl_hiring_button = pyg.rect.Rect(140, 510, 540, 70)
 
         self.ppl_hiring_bar = pyg.rect.Rect(160, 420, 500, 50)
-        self.ppl_hiring_slider = pyg.rect.Rect(150, 415, 20, 60)
+        self.ppl_hiring_slider = pyg.rect.Rect(0, 0, 20, 60)
+        self.ppl_hiring_slider.center = self.ppl_hiring_bar.center
 
         # The left half of the bar will range from 0-100, and the right half
         # will range from 100-1000
         # Also we use 1004 so the scroll bar
         self.ppl_hiring_range = [0, 100, 1004]
-        self.ppl_hiring_num = 0
+        self.ppl_hiring_num = 100
 
         # Picture/Animation
         self.ppl_pic_rect = pyg.rect.Rect(780, 360, 410, 260)
@@ -644,6 +645,9 @@ class FullMenu():
 
         # Draw slider interface
         pyg.draw.rect(self.image, colors['white'], self.ppl_hiring_bar)
+        pyg.draw.rect(self.image, colors['red'].lerp(colors['white'], .4),
+                     (self.ppl_hiring_bar.topleft,
+                     (self.ppl_hiring_slider.centerx-self.ppl_hiring_bar.x, 50)))
         pyg.draw.rect(self.image, colors['red'], self.ppl_hiring_slider)
 
         # Draw button
