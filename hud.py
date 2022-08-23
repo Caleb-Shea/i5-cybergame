@@ -207,99 +207,62 @@ class HUD():
         Returns: None
         """
         self.window.blit(self.arrow, self.arrow_rect)
-
-    def render_time(self, date):
+    
+    def render_info(self, date):
         """
-        Description: Render the current date in the format "DD MM, YYYY".
+        Description: Render the current date, cash, reputation, and personnel.
         Parameters:
             date [dt.date] -> The current in-game date
         Returns: None
         """
+
+        # --- DATE ---
         # Create an object specifially for the text that will be rendered
         date_str = date.strftime("%d %B, %Y")
-        img = fonts['zrnic24'].render(date_str, True, colors['starwhite'])
-        rect = img.get_rect()
-        rect.bottomright = (self.WIDTH - 7, self.HEIGHT - 6)
-
-        # Create a bg that is slightly bigger than the text
-        date_bg = pyg.Surface(rect.inflate(15, 10).size).convert_alpha()
-        date_bg.fill(colors['hud_bg'])
-        dbg_rect = date_bg.get_rect()
-        dbg_rect.bottomright = (self.WIDTH, self.HEIGHT)
+        date_img = fonts['zrnic24'].render(date_str, True, colors['starwhite'])
+        date_rect = date_img.get_rect().inflate(15, 10)
+        date_rect.bottomright = self.window_rect.bottomright
 
         # Render the bg, a border, and the text
-        self.window.blit(date_bg, dbg_rect)
-        pyg.draw.rect(self.window, colors['rose'], dbg_rect, width=1)
-        self.window.blit(img, rect)
+        pyg.draw.rect(self.window, colors['hud_bg'], date_rect)
+        pyg.draw.rect(self.window, colors['rose'], date_rect, width=1)
+        self.window.blit(date_img, date_img.get_rect(center=date_rect.center))
 
-    def render_reputation(self):
-        """
-        Description: Render current amount of reputation the player has, right
-                     above the current time.
-        Parameters: None
-        Returns: None
-        """
+        # --- REPUTATION ---
         # Create an object specifially for the text that will be rendered
-        img = fonts['zrnic24'].render(f"Reputation: {game_info['Reputation']:,}", True, colors['starwhite'])
-        rect = img.get_rect()
-        rect.bottomright = (self.WIDTH - 7, self.HEIGHT - 46)
-
-        # Create a bg that is slightly bigger than the text
-        date_bg = pyg.Surface(rect.inflate(15, 10).size).convert_alpha()
-        date_bg.fill(colors['hud_bg'])
-        dbg_rect = date_bg.get_rect()
-        dbg_rect.bottomright = (self.WIDTH, self.HEIGHT - 40)
+        rep_str = f"Reputation: {game_info['Reputation']:,}"
+        rep_img = fonts['zrnic24'].render(rep_str, True, colors['starwhite'])
+        rep_rect = rep_img.get_rect().inflate(15, 10)
+        rep_rect.bottomright = (self.WIDTH, date_rect.y - 1)
 
         # Render the bg, a border, and the text
-        self.window.blit(date_bg, dbg_rect)
-        pyg.draw.rect(self.window, colors['rose'], dbg_rect, width=1)
-        self.window.blit(img, rect)
+        pyg.draw.rect(self.window, colors['hud_bg'], rep_rect)
+        pyg.draw.rect(self.window, colors['rose'], rep_rect, width=1)
+        self.window.blit(rep_img, rep_img.get_rect(center=rep_rect.center))
 
-    def render_cash(self):
-        """
-        Description: Render current amount of cash the player has, right above
-                     the current reputation.
-        Parameters: None
-        Returns: None
-        """
+        # --- CASH ---
         # Create an object specifially for the text that will be rendered
-        img = fonts['zrnic24'].render(f"Cash: {game_info['Cash']:,}", True, colors['starwhite'])
-        rect = img.get_rect()
-        rect.bottomright = (self.WIDTH - 7, self.HEIGHT - 86)
-
-        # Create a bg that is slightly bigger than the text
-        date_bg = pyg.Surface(rect.inflate(15, 10).size).convert_alpha()
-        date_bg.fill(colors['hud_bg'])
-        dbg_rect = date_bg.get_rect()
-        dbg_rect.bottomright = (self.WIDTH, self.HEIGHT - 80)
+        cash_str = f"Cash: {game_info['Cash']:,}"
+        cash_img = fonts['zrnic24'].render(cash_str, True, colors['starwhite'])
+        cash_rect = cash_img.get_rect().inflate(15, 10)
+        cash_rect.bottomright = (self.WIDTH, rep_rect.y - 1)
 
         # Render the bg, a border, and the text
-        self.window.blit(date_bg, dbg_rect)
-        pyg.draw.rect(self.window, colors['rose'], dbg_rect, width=1)
-        self.window.blit(img, rect)
+        pyg.draw.rect(self.window, colors['hud_bg'], cash_rect)
+        pyg.draw.rect(self.window, colors['rose'], cash_rect, width=1)
+        self.window.blit(cash_img, cash_img.get_rect(center=cash_rect.center))
 
-    def render_personnel(self):
-        """
-        Description: Render current amount of total personnel the player has,
-        right above the current amount of cash.
-        Parameters: None
-        Returns: None
-        """
+        # --- PERSONNEL ---
         # Create an object specifially for the text that will be rendered
-        img = fonts['zrnic24'].render(f"Total Personnel: {game_info['Num Personnel']:,}", True, colors['starwhite'])
-        rect = img.get_rect()
-        rect.bottomright = (self.WIDTH - 7, self.HEIGHT - 126)
-
-        # Create a bg that is slightly bigger than the text
-        date_bg = pyg.Surface(rect.inflate(15, 10).size).convert_alpha()
-        date_bg.fill(colors['hud_bg'])
-        dbg_rect = date_bg.get_rect()
-        dbg_rect.bottomright = (self.WIDTH, self.HEIGHT - 120)
+        ppl_str = f"Personnel: {game_info['Num Personnel']:,}"
+        ppl_img = fonts['zrnic24'].render(ppl_str, True, colors['starwhite'])
+        ppl_rect = ppl_img.get_rect().inflate(15, 10)
+        ppl_rect.bottomright = (self.WIDTH, cash_rect.y - 1)
 
         # Render the bg, a border, and the text
-        self.window.blit(date_bg, dbg_rect)
-        pyg.draw.rect(self.window, colors['rose'], dbg_rect, width=1)
-        self.window.blit(img, rect)
+        pyg.draw.rect(self.window, colors['hud_bg'], ppl_rect)
+        pyg.draw.rect(self.window, colors['rose'], ppl_rect, width=1)
+        self.window.blit(ppl_img, ppl_img.get_rect(center=ppl_rect.center))
 
     def render_earth_loc(self, e_pos):
         """

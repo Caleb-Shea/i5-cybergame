@@ -305,10 +305,7 @@ def main():
                 earth_sys.render()
 
                 # Render essential hud elements
-                hud.render_time(date)
-                hud.render_personnel()
-                hud.render_cash()
-                hud.render_reputation()
+                hud.render_info(date)
                 hud.ticker.render()
             
             else: # If there is a gamefield active
@@ -522,10 +519,7 @@ def main():
             hud.render_hover_menu(earth_sys.get_hovered())
         if not window_rect.colliderect(earth_sys.nodes['EARTH']['rect']):
             hud.render_earth_loc(earth_sys.nodes['EARTH']['rect'].center)
-        hud.render_time(date)
-        hud.render_personnel()
-        hud.render_cash()
-        hud.render_reputation()
+        hud.render_info(date)
         hud.ticker.render()
 
         # Update the display, but don't exceed FPS
