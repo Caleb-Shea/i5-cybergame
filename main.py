@@ -485,7 +485,7 @@ def main():
 
         # Payday is the first of every month
         if date.day == 1 and not got_payday:
-            game_info['Budget'] = 1000000000 + 25000000 * game_info['Reputation']
+            game_info['Budget'] = 1000000000 + 250000 * game_info['Reputation']
             game_info['Cash'] += game_info['Budget']
             got_payday = True
         # Reset tracker

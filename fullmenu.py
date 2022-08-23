@@ -599,10 +599,14 @@ class FullMenu():
             # Buying button
             if self.ppl_hiring_button.collidepoint(m_pos):
                 # If we have enough monetary assets
-                if game_info['Cash'] >= 100*self.ppl_hiring_num:
-                    game_info['Cash'] -= 100*self.ppl_hiring_num
+                if game_info['Cash'] >= self.ppl_hiring_cost:
+                    game_info['Cash'] -= self.ppl_hiring_cost
                     game_info['Staff Assignments']['Unassigned'] += self.ppl_hiring_num
                     game_info['Num Personnel'] += self.ppl_hiring_num
+        
+        self.ppl_hiring_cost = 90000 * self.ppl_hiring_num
+        if self.ppl_hiring_num > 100:
+            self.ppl_hiring_cost = int(self.ppl_hiring_cost * 0.85)
 
     def render_personnel(self):
         """
@@ -654,10 +658,10 @@ class FullMenu():
         pyg.draw.rect(self.image, colors['purple'], self.ppl_hiring_button)
 
         # Draw text with black or red text depending on whether we can afford it
-        if game_info['Cash'] >= 100*self.ppl_hiring_num:
-            text = fonts['zrnic36'].render(f'Hire {self.ppl_hiring_num:,} New Workers: ${100*self.ppl_hiring_num:,}', True, colors['black'])
+        if game_info['Cash'] >= self.ppl_hiring_cost:
+            text = fonts['zrnic36'].render(f'Hire {self.ppl_hiring_num:,} New Workers: ${self.ppl_hiring_cost:,}', True, colors['black'])
         else:
-            text = fonts['zrnic36'].render(f'Hire {self.ppl_hiring_num:,} New Workers: ${100*self.ppl_hiring_num:,}', True, colors['darkred'])
+            text = fonts['zrnic36'].render(f'Hire {self.ppl_hiring_num:,} New Workers: ${self.ppl_hiring_cost:,}', True, colors['darkred'])
         self.image.blit(text, text.get_rect(center=self.ppl_hiring_button.center))
 
         # Render the picture
