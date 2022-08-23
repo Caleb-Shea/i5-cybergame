@@ -1,6 +1,6 @@
 game_info = {
     'Budget': 0,
-    'Cash': 100000,
+    'Cash': 3000000000,
     'Num Personnel': 250,
     'Staff Assignments': {
         'Intel': 80,
